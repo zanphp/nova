@@ -6,9 +6,9 @@
  * Time: 3:23 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation;
+namespace Kdt\Lib\Nova\Foundation;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\ApiSpecManager;
+use Kdt\Lib\Nova\Foundation\Traits\ApiSpecManager;
 
 abstract class TService
 {

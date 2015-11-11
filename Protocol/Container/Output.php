@@ -6,9 +6,9 @@
  * Time: 4:02 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol\Container;
+namespace Kdt\Lib\Nova\Protocol\Container;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
 
 class Output
 {

@@ -6,7 +6,7 @@
  * Time: 5:12 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation\Traits;
+namespace Kdt\Lib\Nova\Foundation\Traits;
 
 trait InstanceManager
 {

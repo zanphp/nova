@@ -6,10 +6,10 @@
  * Time: 8:55 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation;
+namespace Kdt\Lib\Nova\Foundation;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Transport\Client;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Transport\Client;
 
 abstract class TClient
 {

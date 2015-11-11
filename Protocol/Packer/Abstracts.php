@@ -6,9 +6,9 @@
  * Time: 3:25 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol\Packer;
+namespace Kdt\Lib\Nova\Protocol\Packer;
 
-use Kdt\Iron\Nova\Thrift\Service\ExceptionPacket;
+use Kdt\Lib\Nova\Service\ExceptionPacket;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
 use Thrift\Protocol\TBinaryProtocolAccelerated;

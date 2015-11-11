@@ -8,7 +8,7 @@
 
 namespace Kdt\Lib\Nova\Console;
 
-use Kdt\Iron\Nova\Thrift\Transport\Server;
+use Kdt\Lib\Nova\Transport\Server;
 
 use swoole_server;
 

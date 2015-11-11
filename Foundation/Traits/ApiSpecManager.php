@@ -6,7 +6,7 @@
  * Time: 8:03 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation\Traits;
+namespace Kdt\Lib\Nova\Foundation\Traits;
 
 trait ApiSpecManager
 {

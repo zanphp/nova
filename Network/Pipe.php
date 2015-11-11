@@ -6,12 +6,12 @@
  * Time: 3:51 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Network;
+namespace Kdt\Lib\Nova\Network;
 
-use Kdt\Iron\Nova\Thrift\Exception\FrameworkException;
-use Kdt\Iron\Nova\Thrift\Protocol\Packer;
-use Kdt\Iron\Nova\Thrift\Service\Finder;
-use Kdt\Iron\Nova\Thrift\Service\Dispatcher;
+use Kdt\Lib\Nova\Exception\FrameworkException;
+use Kdt\Lib\Nova\Protocol\Packer;
+use Kdt\Lib\Nova\Service\Finder;
+use Kdt\Lib\Nova\Service\Dispatcher;
 use Thrift\Type\TMessageType;
 
 abstract class Pipe

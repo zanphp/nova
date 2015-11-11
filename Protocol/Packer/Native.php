@@ -6,10 +6,10 @@
  * Time: 3:22 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol\Packer;
+namespace Kdt\Lib\Nova\Protocol\Packer;
 
-use Kdt\Iron\Nova\Thrift\Service\ExceptionPacket;
-use Kdt\Iron\Nova\Thrift\Foundation\Protocol\TException as BizException;
+use Kdt\Lib\Nova\Service\ExceptionPacket;
+use Kdt\Lib\Nova\Foundation\Protocol\TException as BizException;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;

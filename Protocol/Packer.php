@@ -6,11 +6,11 @@
  * Time: 11:36 AM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol;
+namespace Kdt\Lib\Nova\Protocol;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Protocol\Packer\Extension;
-use Kdt\Iron\Nova\Thrift\Protocol\Packer\Native;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Protocol\Packer\Extension;
+use Kdt\Lib\Nova\Protocol\Packer\Native;
 use Exception as SysException;
 
 class Packer

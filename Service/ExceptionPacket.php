@@ -6,10 +6,10 @@
  * Time: 6:15 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Service;
+namespace Kdt\Lib\Nova\Service;
 
-use Kdt\Iron\Nova\Thrift\Exception\RpcException;
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Exception\RpcException;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TException as ThriftException;
 use Exception as SysException;

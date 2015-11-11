@@ -6,10 +6,10 @@
  * Time: 1:43 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Transport;
+namespace Kdt\Lib\Nova\Transport;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Network\Network;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Network\Network;
 
 class Server
 {

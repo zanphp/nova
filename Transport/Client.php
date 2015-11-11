@@ -6,12 +6,12 @@
  * Time: 1:39 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Transport;
+namespace Kdt\Lib\Nova\Transport;
 
-use Kdt\Iron\Nova\Thrift\Network\Network;
-use Kdt\Iron\Nova\Thrift\Protocol\Packer;
-use Kdt\Iron\Nova\Thrift\Service\Convert;
-use Kdt\Iron\Nova\Thrift\Service\Finder;
+use Kdt\Lib\Nova\Network\Network;
+use Kdt\Lib\Nova\Protocol\Packer;
+use Kdt\Lib\Nova\Service\Convert;
+use Kdt\Lib\Nova\Service\Finder;
 use Thrift\Type\TMessageType;
 
 class Client

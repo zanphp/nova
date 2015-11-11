@@ -6,9 +6,9 @@
  * Time: 2:42 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Service;
+namespace Kdt\Lib\Nova\Service;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
 
 class Objects
 {

@@ -6,9 +6,9 @@
  * Time: 3:23 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol\Packer;
+namespace Kdt\Lib\Nova\Protocol\Packer;
 
-use Kdt\Iron\Nova\Thrift\Protocol\Container;
+use Kdt\Lib\Nova\Protocol\Container;
 use Exception as SysException;
 
 class Extension extends Abstracts

@@ -6,11 +6,11 @@
  * Time: 4:04 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Protocol;
+namespace Kdt\Lib\Nova\Protocol;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Protocol\Container\Input;
-use Kdt\Iron\Nova\Thrift\Protocol\Container\Output;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Protocol\Container\Input;
+use Kdt\Lib\Nova\Protocol\Container\Output;
 use Thrift\Exception\TApplicationException;
 
 class Container

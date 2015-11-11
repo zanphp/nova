@@ -6,9 +6,9 @@
  * Time: 4:45 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation\Protocol;
+namespace Kdt\Lib\Nova\Foundation\Protocol;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\StructSpecManager;
+use Kdt\Lib\Nova\Foundation\Traits\StructSpecManager;
 use Exception as SysException;
 
 abstract class TException extends SysException

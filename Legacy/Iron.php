@@ -6,13 +6,13 @@
  * Time: 8:11 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Legacy;
+namespace Kdt\Lib\Nova\Legacy;
 
-use Kdt\Iron\Nova\Thrift\Exception\NetworkException;
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Service\Convert;
-use Kdt\Iron\Nova\Thrift\Service\Finder;
-use Kdt\Iron\Nova\Thrift\Service\Objects;
+use Kdt\Lib\Nova\Exception\NetworkException;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Service\Convert;
+use Kdt\Lib\Nova\Service\Finder;
+use Kdt\Lib\Nova\Service\Objects;
 
 class Iron
 {

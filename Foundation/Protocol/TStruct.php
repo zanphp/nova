@@ -6,9 +6,9 @@
  * Time: 4:35 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Foundation\Protocol;
+namespace Kdt\Lib\Nova\Foundation\Protocol;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\StructSpecManager;
+use Kdt\Lib\Nova\Foundation\Traits\StructSpecManager;
 
 abstract class TStruct
 {

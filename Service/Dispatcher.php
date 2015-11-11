@@ -6,10 +6,10 @@
  * Time: 2:30 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Service;
+namespace Kdt\Lib\Nova\Service;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Protocol\TException as BizException;
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Foundation\Protocol\TException as BizException;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
 use Exception as SysException;
 
 class Dispatcher

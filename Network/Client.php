@@ -6,10 +6,10 @@
  * Time: 3:16 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Network;
+namespace Kdt\Lib\Nova\Network;
 
-use Kdt\Iron\Nova\Thrift\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Thrift\Network\Client\Swoole;
+use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Lib\Nova\Network\Client\Swoole;
 
 class Client
 {

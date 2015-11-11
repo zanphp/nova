@@ -6,9 +6,9 @@
  * Time: 3:11 PM
  */
 
-namespace Kdt\Iron\Nova\Thrift\Network\Client;
+namespace Kdt\Lib\Nova\Network\Client;
 
-use Kdt\Iron\Nova\Thrift\Exception\NetworkException;
+use Kdt\Lib\Nova\Exception\NetworkException;
 use swoole_client as SwooleClient;
 
 class Swoole
