@@ -1,0 +1,11 @@
+{
+  "name": "kdt-lib/nova",
+  "require": {
+    "php": ">=5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kdt\\Lib\\Nova\\": ""
+    }
+  }
+}
