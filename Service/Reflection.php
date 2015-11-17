@@ -28,6 +28,16 @@ class Reflection
     private $kdtApiNS = 'kdt.api';
 
     /**
+     * @var string
+     */
+    private $kdtAppNS = 'kdt.app';
+
+    /**
+     * @var string
+     */
+    private $kdtAppCtrl = 'controllers';
+
+    /**
      * @var array
      */
     private $refCache = ['interface' => [], 'controller' => [], 'client' => [], 'service' => []];
@@ -38,7 +48,7 @@ class Reflection
      */
     public function getServiceController($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'controller', function () use ($serviceName) { return $this->getIronController($serviceName); });
+        return $this->getCachedClassName($serviceName, 'controller', function () use ($serviceName) { return $this->getNovaController($serviceName); });
     }
 
     /**
@@ -82,21 +92,22 @@ class Reflection
         }
         else
         {
-            $this->refCache[$cacheKey][$serviceName] = $class = is_string($scope) ? $this->getTargetNS($serviceName, $scope) : call_user_func($scope);
+            $this->refCache[$cacheKey][$serviceName] = $class = is_string($scope) ? $this->getTargetNS($serviceName, $this->kdtApiNS, $scope) : call_user_func($scope);
         }
         return $class;
     }
 
     /**
      * @param $serviceName
+     * @param $prefixNS
      * @param $scopeName
      * @return string
      */
-    private function getTargetNS($serviceName, $scopeName = null)
+    private function getTargetNS($serviceName, $prefixNS, $scopeName = null)
     {
         if (substr($serviceName, 0, strlen($this->comApiNS)) == $this->comApiNS)
         {
-            $serviceName = $this->kdtApiNS . substr($serviceName, strlen($this->comApiNS));
+            $serviceName = $prefixNS . substr($serviceName, strlen($this->comApiNS));
         }
         $parts = explode('.', $serviceName);
         // pop service part
@@ -111,15 +122,20 @@ class Reflection
      * @param $serviceName
      * @return string
      */
-    private function getIronController($serviceName)
+    private function getNovaController($serviceName)
     {
-        $symbol = $this->getTargetNS($serviceName, '~');
-        $namespace = str_replace(['\\'.str_replace('.', '\\', $this->kdtApiNS).'\\', '\\~'], '', $symbol);
+        $symbol = $this->getTargetNS($serviceName, $this->kdtAppNS, '~');
+        $namespace = str_replace('\\~', '', $symbol);
         $programs = [];
         $parts = explode('\\', $namespace);
+        // pop service part
+        $serviceClass = ucfirst(array_pop($parts));
+        // push controllers
+        array_push($parts, $this->kdtAppCtrl);
+        // uc-first all
         array_walk($parts, function ($part) use (&$programs) {
             $programs[] = ucfirst($part);
         });
-        return implode('_', $programs).'_ApiController';
+        return implode('\\', $programs).'\\'.$serviceClass;
     }
 }
