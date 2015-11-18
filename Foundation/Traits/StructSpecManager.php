@@ -6,7 +6,7 @@
  * Time: 2:31 PM
  */
 
-namespace Kdt\Lib\Nova\Foundation\Traits;
+namespace Kdt\Iron\Nova\Foundation\Traits;
 
 trait StructSpecManager
 {

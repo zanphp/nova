@@ -6,9 +6,9 @@
  * Time: 7:07 PM
  */
 
-namespace Kdt\Lib\Nova\Service;
+namespace Kdt\Iron\Nova\Service;
 
-use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 
 class Finder
 {
@@ -89,7 +89,7 @@ class Finder
         $clientCN = $this->ref->getClientClass($serviceName);
 
         /**
-         * @var \Kdt\Lib\Nova\Foundation\TClient
+         * @var \Kdt\Iron\Nova\Foundation\TClient
          */
         $clientOJ = $this->objects->load($clientCN);
 
@@ -108,7 +108,7 @@ class Finder
         $serviceCN = $this->ref->getServiceClass($serviceName);
 
         /**
-         * @var \Kdt\Lib\Nova\Foundation\TService
+         * @var \Kdt\Iron\Nova\Foundation\TService
          */
         $serviceCJ = $this->objects->load($serviceCN);
 
@@ -127,7 +127,7 @@ class Finder
         $serviceCN = $this->ref->getServiceClass($serviceName);
 
         /**
-         * @var \Kdt\Lib\Nova\Foundation\TService
+         * @var \Kdt\Iron\Nova\Foundation\TService
          */
         $serviceCJ = $this->objects->load($serviceCN);
 

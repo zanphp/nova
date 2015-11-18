@@ -6,9 +6,9 @@
  * Time: 2:42 PM
  */
 
-namespace Kdt\Lib\Nova\Service;
+namespace Kdt\Iron\Nova\Service;
 
-use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 
 class Objects
 {

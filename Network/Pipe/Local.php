@@ -6,9 +6,9 @@
  * Time: 3:43 PM
  */
 
-namespace Kdt\Lib\Nova\Network\Pipe;
+namespace Kdt\Iron\Nova\Network\Pipe;
 
-use Kdt\Lib\Nova\Network\Pipe;
+use Kdt\Iron\Nova\Network\Pipe;
 
 class Local extends Pipe
 {

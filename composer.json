@@ -15,7 +15,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kdt\\Lib\\Nova\\": ""
+      "Kdt\\Iron\\Nova\\": ""
     }
   }
 }

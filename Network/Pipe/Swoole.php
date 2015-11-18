@@ -6,10 +6,10 @@
  * Time: 3:59 PM
  */
 
-namespace Kdt\Lib\Nova\Network\Pipe;
+namespace Kdt\Iron\Nova\Network\Pipe;
 
-use Kdt\Lib\Nova\Network\Client;
-use Kdt\Lib\Nova\Network\Pipe;
+use Kdt\Iron\Nova\Network\Client;
+use Kdt\Iron\Nova\Network\Pipe;
 
 class Swoole extends Pipe
 {

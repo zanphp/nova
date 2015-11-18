@@ -6,9 +6,9 @@
  * Time: 2:49 PM
  */
 
-namespace Kdt\Lib\Nova\Service;
+namespace Kdt\Iron\Nova\Service;
 
-use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Support\Str;
 use Thrift\Type\TType;
 
@@ -107,7 +107,7 @@ class Convert
                     break;
                 case TType::STRUCT:
                     /**
-                     * @var \Kdt\Lib\Nova\Foundation\Protocol\TStruct
+                     * @var \Kdt\Iron\Nova\Foundation\Protocol\TStruct
                      */
                     $objIns = new $struct['class'];
                     $objStruct = $objIns->getStructSpec();

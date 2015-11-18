@@ -6,13 +6,13 @@
  * Time: 1:44 PM
  */
 
-namespace Kdt\Lib\Nova\Network;
+namespace Kdt\Iron\Nova\Network;
 
 use Config;
 
-use Kdt\Lib\Nova\Foundation\Traits\InstanceManager;
-use Kdt\Lib\Nova\Network\Pipe\Local;
-use Kdt\Lib\Nova\Network\Pipe\Swoole;
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\Network\Pipe\Local;
+use Kdt\Iron\Nova\Network\Pipe\Swoole;
 
 class Network
 {

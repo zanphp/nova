@@ -6,7 +6,7 @@
  * Time: 4:30 PM
  */
 
-namespace Kdt\Lib\Nova\Exception;
+namespace Kdt\Iron\Nova\Exception;
 
 use Exception as SysException;
 
