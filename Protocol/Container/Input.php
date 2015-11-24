@@ -20,13 +20,13 @@ class Input
     /**
      * @var array
      */
-    public static $_TSPEC = [];
+    public $_TSPEC = [];
 
     /**
      * @param $TSPEC
      */
     public function setTSPEC($TSPEC)
     {
-        self::$_TSPEC = $TSPEC;
+        $this->_TSPEC = $TSPEC;
     }
 }

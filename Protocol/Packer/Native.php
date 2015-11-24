@@ -73,6 +73,9 @@ class Native extends Abstracts
 
         $this->inputBin->readMessageEnd();
 
+        // clear buffer (important!!)
+        $this->inputBuffer->read($this->maxPacketSize);
+
         $values = [];
 
         foreach ($args as $arg)

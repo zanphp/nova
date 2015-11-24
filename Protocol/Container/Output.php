@@ -20,14 +20,14 @@ class Output
     /**
      * @var array
      */
-    public static $_TSPEC = [];
+    public $_TSPEC = [];
 
     /**
      * @param $TSPEC
      */
     public function setTSPEC($TSPEC)
     {
-        self::$_TSPEC = $TSPEC;
+        $this->_TSPEC = $TSPEC;
     }
 
     /**
@@ -36,7 +36,7 @@ class Output
     public function export()
     {
         $export = [];
-        foreach (self::$_TSPEC as $spec)
+        foreach ($this->_TSPEC as $spec)
         {
             $export[$spec['var']] = $this->$spec['var'];
         }

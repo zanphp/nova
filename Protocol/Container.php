@@ -29,8 +29,17 @@ class Container
     {
         if (is_array($spec))
         {
-            $input = Input::newInstance();
-            $input->setTSPEC($spec);
+            // assign input
+            if (is_null($object))
+            {
+                $input = Input::newInstance();
+                $input->setTSPEC($spec);
+            }
+            else
+            {
+                $input = $object;
+            }
+            // filling spec
             foreach ($spec as $struct)
             {
                 if (isset($struct['value']))

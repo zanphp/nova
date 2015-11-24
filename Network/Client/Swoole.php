@@ -72,7 +72,7 @@ class Swoole
     public function send($serviceName, $methodName, $thriftBIN)
     {
         $this->setBusying();
-        $sent = @$this->client->call_service($serviceName, $methodName, $thriftBIN);
+        $sent = @$this->client->call_service($serviceName, $methodName, '{}', $thriftBIN);
         if (false === $sent)
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
