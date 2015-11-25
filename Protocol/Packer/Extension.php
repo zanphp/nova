@@ -35,7 +35,9 @@ class Extension extends Abstracts
     protected function processEncode($type, $name, $args)
     {
         $input = $this->container->inputObject($args);
+
         thrift_protocol_write_binary($this->outputBin, $name, $type, $input, $this->seqID, $this->outputBin->isStrictWrite());
+
         return $this->outputBuffer->read($this->maxPacketSize);
     }
 
@@ -48,8 +50,13 @@ class Extension extends Abstracts
     public function processDecode($data, $args)
     {
         $this->inputBuffer->write($data);
+
         $output = $this->container->outputObject($args);
         thrift_protocol_read_binary($this->inputBin, $output, $this->inputBin->isStrictRead());
+
+        // clear buffer (important!!)
+        $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
+
         return $output->export();
     }
 }

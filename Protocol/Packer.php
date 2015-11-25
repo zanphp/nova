@@ -35,7 +35,7 @@ class Packer
      */
     public function __construct()
     {
-        if (false && function_exists('thrift_protocol_read_binary') && function_exists('thrift_protocol_write_binary'))
+        if (function_exists('thrift_protocol_read_binary') && function_exists('thrift_protocol_write_binary'))
         {
             $this->packer = new Extension();
         }
