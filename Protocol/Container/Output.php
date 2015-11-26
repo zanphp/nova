@@ -38,7 +38,10 @@ class Output
         $export = [];
         foreach ($this->_TSPEC as $spec)
         {
-            $export[$spec['var']] = $this->$spec['var'];
+            if (property_exists($this, $spec['var']))
+            {
+                $export[$spec['var']] = $this->$spec['var'];
+            }
         }
         return $export;
     }
