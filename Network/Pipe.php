@@ -12,6 +12,7 @@ use Kdt\Iron\Nova\Exception\FrameworkException;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Kdt\Iron\Nova\Service\Finder;
 use Kdt\Iron\Nova\Service\Dispatcher;
+use Thrift\Exception\TApplicationException;
 use Thrift\Type\TMessageType;
 
 abstract class Pipe
@@ -50,15 +51,33 @@ abstract class Pipe
      */
     final public function process($serviceName, $methodName, $inputBIN)
     {
-        // decoding
-        $inputArguments = $this->packer->decode($inputBIN, $this->finder->getInputStruct($serviceName, $methodName));
-        // dispatching
-        $response = $this->dispatcher->call($serviceName, $methodName, $inputArguments);
+        // prepare structs
+        $inputStruct = $this->finder->getInputStruct($serviceName, $methodName);
+        $outputStruct = $this->finder->getOutputStruct($serviceName, $methodName);
+        $exceptionStruct = $this->finder->getExceptionStruct($serviceName, $methodName);
+        // checking
+        if (is_null($inputStruct) || is_null($outputStruct))
+        {
+            // maybe method has been removed
+            $response = [
+                'state' => 'failed',
+                'sign' => 'sys-exception',
+                'data' => new TApplicationException(
+                    is_null($inputStruct) ? 'dispatcher.input.spec.missing' : 'dispatcher.output.spec.missing',
+                    TApplicationException::WRONG_METHOD_NAME
+                )
+            ];
+        }
+        else
+        {
+            // decoding
+            $inputArguments = $this->packer->decode($inputBIN, $inputStruct);
+            // dispatching
+            $response = $this->dispatcher->call($serviceName, $methodName, $inputArguments);
+        }
+        // checking
         if ($response['state'] === 'success')
         {
-            // prepare structs
-            $successStruct = $this->finder->getOutputStruct($serviceName, $methodName);
-            $exceptionStruct = $this->finder->getExceptionStruct($serviceName, $methodName);
             // response data
             if ($response['sign'] === 'success')
             {
@@ -75,7 +94,7 @@ abstract class Pipe
                 throw new FrameworkException('dispatcher.response.struct.illegal');
             }
             // encoding
-            $package = $this->packer->struct($successStruct, $exceptionStruct, $success, $exception);
+            $package = $this->packer->struct($outputStruct, $exceptionStruct, $success, $exception);
             $outputBIN = $this->packer->encode(TMessageType::REPLY, $methodName, $package);
         }
         else
