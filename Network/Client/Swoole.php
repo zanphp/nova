@@ -8,32 +8,22 @@
 
 namespace Kdt\Iron\Nova\Network\Client;
 
+use Config;
+
 use Kdt\Iron\Nova\Exception\NetworkException;
 use swoole_client as SwooleClient;
 
 class Swoole
 {
     /**
-     * @var array
+     * @var string
      */
-    private $config = [
-        'open_nova_protocol' => 1
-    ];
+    private $connConfKey = 'nova.client';
 
     /**
      * @var string
      */
-    private $host = '127.0.0.1';
-
-    /**
-     * @var int
-     */
-    private $port = 10002;
-
-    /**
-     * @var int
-     */
-    private $timeout = 1;
+    private $swooleConfKey = 'nova.swoole.client';
 
     /**
      * @var object
@@ -50,9 +40,11 @@ class Swoole
      */
     public function __construct()
     {
-        $this->client = new SwooleClient(SWOOLE_SOCK_TCP | SWOOLE_KEEP);
-        $this->client->set($this->config);
-        $connected = @$this->client->connect($this->host, $this->port, $this->timeout);
+        $connConf = Config::get($this->connConfKey);
+        $clientFlags = $connConf['persistent'] ? SWOOLE_SOCK_TCP | SWOOLE_KEEP : SWOOLE_SOCK_TCP;
+        $this->client = new SwooleClient($clientFlags);
+        $this->client->set(Config::get($this->swooleConfKey));
+        $connected = $this->client->connect($connConf['host'], $connConf['port'], $connConf['timeout']);
         if ($connected)
         {
             $this->setIdling();
@@ -72,7 +64,7 @@ class Swoole
     public function send($serviceName, $methodName, $thriftBIN)
     {
         $this->setBusying();
-        $sent = @$this->client->call_service($serviceName, $methodName, '{}', $thriftBIN);
+        $sent = $this->client->call_service($serviceName, $methodName, '{}', $thriftBIN);
         if (false === $sent)
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
@@ -85,7 +77,7 @@ class Swoole
      */
     public function recv()
     {
-        $response = @$this->client->recv_service();
+        $response = $this->client->recv_service();
         if (false === $response)
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
