@@ -12,6 +12,7 @@ use Config;
 
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Network\Server\Swoole;
+use Kdt\Iron\Nova\Service\Scanner;
 
 class Server
 {
@@ -41,11 +42,17 @@ class Server
     private $server = null;
 
     /**
+     * @var Scanner
+     */
+    private $scanner = null;
+
+    /**
      * Server constructor.
      */
     public function __construct()
     {
         $this->server = new Swoole();
+        $this->scanner = Scanner::instance();
     }
 
     /**
@@ -61,6 +68,12 @@ class Server
      */
     public function run()
     {
-        $this->server->startup($this->verbose, Config::get($this->serverConfKey), Config::get($this->platformConfKey));
+        $this->server->startup(
+            $this->verbose,
+            Config::get($this->serverConfKey),
+            array_merge(
+                Config::get($this->platformConfKey), ['services' => $this->scanner->scanApis(APP_NAME)]
+            )
+        );
     }
 }
