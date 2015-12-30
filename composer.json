@@ -1,7 +1,6 @@
 {
   "name": "kdt-lib/nova",
   "require": {
-    "php": ">=5.6",
     "packaged/thrift": "0.9.2.1"
   },
   "autoload": {
