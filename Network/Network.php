@@ -31,7 +31,7 @@ class Network
      */
     public function __construct()
     {
-        if (Config::get('run_mode') == 'test')
+        if (Config::get('nova_mode') == 'local')
         {
             if (isset($_SERVER['HTTP_VIA_RPC']) && strtolower($_SERVER['HTTP_VIA_RPC']) == 'nova')
             {

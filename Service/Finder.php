@@ -55,7 +55,8 @@ class Finder
         {
             $interface = $this->ref->getInterfaceClass($serviceName);
             $controller = $this->ref->getServiceController($serviceName);
-            $implements = class_implements($controller);
+            // TODO temp use '@' to force ignore warning message
+            $implements = @class_implements($controller);
             $this->interfaceCompatible[$serviceName] = $is = isset($implements[substr($interface, 1)]) ? true : false;
         }
         return $is;
