@@ -11,6 +11,7 @@ namespace Kdt\Iron\Nova\Network\Client;
 use Config;
 
 use Kdt\Iron\Nova\Exception\NetworkException;
+use Kdt\Iron\Nova\Exception\ProtocolException;
 use swoole_client as SwooleClient;
 
 class Swoole
@@ -24,6 +25,11 @@ class Swoole
      * @var string
      */
     private $swooleConfKey = 'nova.swoole.client';
+
+    /**
+     * @var string
+     */
+    private $attachmentContent = '{}';
 
     /**
      * @var object
@@ -60,30 +66,52 @@ class Swoole
      * @param $methodName
      * @param $thriftBIN
      * @throws NetworkException
+     * @throws ProtocolException
      */
     public function send($serviceName, $methodName, $thriftBIN)
     {
         $this->setBusying();
-        $sent = $this->client->call_service($serviceName, $methodName, '{}', $thriftBIN);
-        if (false === $sent)
+        $sockInfo = $this->client->getsockname();
+        $localIp = ip2long($sockInfo['host']);
+        $localPort = $sockInfo['port'];
+        $seqNo = nova_get_sequence();
+        $sendBuffer = null;
+        if (nova_encode($serviceName, $methodName, $localIp, $localPort, $seqNo, $this->attachmentContent, $thriftBIN, $sendBuffer))
         {
-            throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
+            $sent = $this->client->send($sendBuffer);
+            if (false === $sent)
+            {
+                throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
+            }
+        }
+        else
+        {
+            throw new ProtocolException('nova.encoding.failed');
         }
     }
 
     /**
      * @return string
      * @throws NetworkException
+     * @throws ProtocolException
      */
     public function recv()
     {
-        $response = $this->client->recv_service();
-        if (false === $response)
+        $data = $this->client->recv();
+        if (false === $data)
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
         }
         $this->setIdling();
-        return $response;
+        $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
+        if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN))
+        {
+            return $thriftBIN;
+        }
+        else
+        {
+            throw new ProtocolException('nova.decoding.failed');
+        }
     }
 
     /**

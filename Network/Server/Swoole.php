@@ -13,6 +13,7 @@ use Config;
 use swoole_server as SwooleServer;
 
 use Kdt\Iron\Nova\Transport\Server as TransportServer;
+use Kdt\Iron\Nova\Exception\ProtocolException;
 use Exception as SysException;
 
 class Swoole
@@ -54,7 +55,7 @@ class Swoole
         $this->instance->set(Config::get($this->swooleConfKey));
         $this->instance->nova_config($platformConfig);
         $this->instance->on('WorkerStart', [$this, 'processWorkerStart']);
-        $this->instance->on('service', [$this, 'processServiceRequest']);
+        $this->instance->on('receive', [$this, 'processServiceRequest']);
         $this->instance->start();
     }
 
@@ -74,28 +75,39 @@ class Swoole
      * @param SwooleServer $server
      * @param $fd
      * @param $from_id
-     * @param $serviceName
-     * @param $methodName
-     * @param $remoteIP
-     * @param $remotePort
-     * @param $seqNo
-     * @param $dataBuffer
+     * @param $data
      */
-    public function processServiceRequest(SwooleServer $server, $fd, $from_id, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $dataBuffer)
+    public function processServiceRequest(SwooleServer $server, $fd, $from_id, $data)
     {
+        $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $novaData = $attachData = $execResult = $outputBuffer = null;
         try
         {
-            $outputBuffer = TransportServer::instance()->handle($serviceName, $methodName, $dataBuffer);
+            if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $novaData))
+            {
+                $execResult = TransportServer::instance()->handle($serviceName, $methodName, $novaData);
+            }
+            else
+            {
+                throw new ProtocolException('nova.decoding.failed');
+            }
             if ($this->verboseMode)
             {
-                echo sprintf('[%s]<||>[%s:%s]<||>%s<||>%s::%s<||>%d:%d', date('Y-m-d H:i:s'), long2ip($remoteIP), $remotePort, $seqNo, $serviceName, $methodName, strlen($dataBuffer), strlen($outputBuffer)), "\n";
+                echo sprintf('[%s]<||>[%s:%s]<||>%s<||>%s::%s<||>%d:%d', date('Y-m-d H:i:s'), long2ip($remoteIP), $remotePort, $seqNo, $serviceName, $methodName, strlen($novaData), strlen($outputBuffer)), "\n";
             }
-            $server->resp_service($fd, $serviceName, $methodName, $this->attachmentContent, $remoteIP, $remotePort, $seqNo, $outputBuffer);
         }
         catch (SysException $e)
         {
-            // sending default exception bin
-            $server->resp_service($fd, $serviceName, $methodName, $this->attachmentContent, $remoteIP, $remotePort, $seqNo, base64_decode($this->processorExceptionB64));
+            // default exception bin
+            $execResult = base64_decode($this->processorExceptionB64);
+        }
+        // encoding && sending
+        if (nova_encode($serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $this->attachmentContent, $execResult, $outputBuffer))
+        {
+            $server->send($fd, $outputBuffer);
+        }
+        else
+        {
+            $server->send($fd, 'NOVA.ENCODING.FAILED');
         }
     }
 }
