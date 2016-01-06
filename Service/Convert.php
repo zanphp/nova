@@ -29,7 +29,7 @@ class Convert
         $pack = [];
         foreach ($struct as $pos => $config)
         {
-            $key = Str::snake($config['var']);
+            $key = $config['var'];
             if (isset($data[$key]))
             {
                 $pack[] = $this->outputArrayToStruct($data[$key], $config);
