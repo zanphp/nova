@@ -71,16 +71,6 @@ class Client
             ),
             $this->packer->struct($outputStruct, $exceptionStruct)
         );
-        $data = isset($response[$this->packer->successKey]) ? $response[$this->packer->successKey] : null;
-        $useInterface = $this->finder->isInterfaceCompatible($this->serviceName);
-        if ($useInterface)
-        {
-            $success = $data;
-        }
-        else
-        {
-            $success = $this->convert->outputStructToArray($data);
-        }
-        return $success;
+        return isset($response[$this->packer->successKey]) ? $response[$this->packer->successKey] : null;
     }
 }
