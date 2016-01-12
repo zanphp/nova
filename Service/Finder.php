@@ -28,38 +28,12 @@ class Finder
     private $objects = null;
 
     /**
-     * @var array
-     */
-    private $interfaceCompatible = [];
-
-    /**
      * Detector constructor.
      */
     public function __construct()
     {
         $this->ref = Reflection::instance();
         $this->objects = Objects::instance();
-    }
-
-    /**
-     * @param $serviceName
-     * @return bool
-     */
-    public function isInterfaceCompatible($serviceName)
-    {
-        if (isset($this->interfaceCompatible[$serviceName]))
-        {
-            $is = $this->interfaceCompatible[$serviceName];
-        }
-        else
-        {
-            $interface = $this->ref->getInterfaceClass($serviceName);
-            $controller = $this->ref->getServiceController($serviceName);
-            // TODO temp use '@' to force ignore warning message
-            $implements = @class_implements($controller);
-            $this->interfaceCompatible[$serviceName] = $is = isset($implements[substr($interface, 1)]) ? true : false;
-        }
-        return $is;
     }
 
     /**
