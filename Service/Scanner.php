@@ -20,6 +20,11 @@ class Scanner
     /**
      * @var string
      */
+    private $kdtApiRoot = '/';
+
+    /**
+     * @var string
+     */
     private $kdtApiPath = 'vendor/kdt-api/';
 
     /**
@@ -48,9 +53,9 @@ class Scanner
      */
     public function scanApis($appName)
     {
-        $root = ROOT_PATH . $this->kdtApiPath . $appName;
+        $this->kdtApiRoot = ROOT_PATH . $this->kdtApiPath . $appName;
         $this->stashInit();
-        $this->searching($root . '/' .$this->serviceDir);
+        $this->searching($this->kdtApiRoot . '/' .$this->serviceDir);
         return $this->syntaxFormatting($this->stashFlush());
     }
 
@@ -145,7 +150,7 @@ class Scanner
      */
     private function getDirPattern($dirName)
     {
-        return '/' . $dirName . '/';
+        return $this->kdtApiRoot . '/' . $dirName . '/';
     }
 
     /**
