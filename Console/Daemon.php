@@ -24,6 +24,7 @@ class Daemon
     public function run()
     {
         $server = Server::instance();
+        $server->setVerbose(true);
         $server->run();
     }
 }

@@ -35,7 +35,7 @@ class Reflection
     /**
      * @var string
      */
-    private $kdtAppCtrl = 'controllers';
+    private $kdtAppCtrl = '';
 
     /**
      * @var array
@@ -110,12 +110,16 @@ class Reflection
             $serviceName = $prefixNS . substr($serviceName, strlen($this->comApiNS));
         }
         $parts = explode('.', $serviceName);
+        // NS list
+        $nsKDT = array_shift($parts);
+        $nsAPI = array_shift($parts);
+        $nsAPP = array_shift($parts);
         // pop service part
         $service = ucfirst(array_pop($parts));
         // pop scope part
         $program = array_pop($parts);
         // get namespace part
-        return '\\'.implode('\\', $parts).'\\'.$scopeName.'\\'.$program.'\\'.$service;
+        return '\\'.implode('\\', [$nsKDT, $nsAPI, $nsAPP]).'\\'.$scopeName.'\\'.implode('\\', $parts).'\\'.$program.'\\'.$service;
     }
 
     /**
@@ -134,7 +138,7 @@ class Reflection
         array_push($parts, $this->kdtAppCtrl);
         // uc-first all
         array_walk($parts, function ($part) use (&$programs) {
-            $programs[] = ucfirst($part);
+            $part && $programs[] = ucfirst($part);
         });
         return implode('\\', $programs).'\\'.$serviceClass;
     }
