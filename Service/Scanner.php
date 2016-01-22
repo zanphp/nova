@@ -48,6 +48,19 @@ class Scanner
     private $stashServiceMethods = [];
 
     /**
+     * @var Finder
+     */
+    private $finder = null;
+
+    /**
+     * Scanner constructor.
+     */
+    public function __construct()
+    {
+        $this->finder = Finder::instance();
+    }
+
+    /**
      * @param $appName
      * @return array
      */
@@ -107,7 +120,7 @@ class Scanner
     {
         $serviceCode = file_get_contents($file);
         $matched = preg_match($this->regexServiceName, $serviceCode, $matches);
-        if ($matched && isset($matches[0]))
+        if ($matched && isset($matches[0]) && $this->isLocalHosting($matches[0]))
         {
             $this->parsingInterface($matches[0], str_replace($this->getDirPattern($this->serviceDir), $this->getDirPattern($this->interfaceDir), $file));
         }
@@ -142,6 +155,15 @@ class Scanner
                 }
             }
         }
+    }
+
+    /**
+     * @param $serviceName
+     * @return bool
+     */
+    private function isLocalHosting($serviceName)
+    {
+        return class_exists($this->finder->getServiceController($serviceName));
     }
 
     /**

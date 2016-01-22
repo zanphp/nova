@@ -24,11 +24,17 @@ class Server
     private $network = null;
 
     /**
+     * @var Hijack
+     */
+    private $hijack = null;
+
+    /**
      * Service constructor.
      */
     public function __construct()
     {
         $this->network = Network::instance();
+        $this->hijack = Hijack::instance();
     }
 
     /**
@@ -39,6 +45,14 @@ class Server
      */
     public function handle($serviceName, $methodName, $thriftBIN)
     {
-        return $this->network->process($serviceName, $methodName, $thriftBIN);
+        $hijacked = $this->hijack->processing($serviceName, $methodName, $thriftBIN);
+        if (is_null($hijacked))
+        {
+            return $this->network->process($serviceName, $methodName, $thriftBIN);
+        }
+        else
+        {
+            return $hijacked;
+        }
     }
 }
