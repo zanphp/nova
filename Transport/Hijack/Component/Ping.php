@@ -20,7 +20,7 @@ class Ping extends Framework
      */
     public function matchRequest($serviceName, $methodName, $thriftBIN)
     {
-        return $serviceName == 'com.youzan.service.test';
+        return $serviceName == 'com.youzan.service.test' && $methodName == 'ping';
     }
 
     /**
