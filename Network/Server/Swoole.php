@@ -88,7 +88,7 @@ class Swoole
             }
             else
             {
-                throw new ProtocolException('nova.decoding.failed');
+                throw new ProtocolException('nova.decoding.failed ~[server:'.strlen($data).']');
             }
             if ($this->verboseMode)
             {

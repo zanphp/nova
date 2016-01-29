@@ -10,9 +10,10 @@ namespace Kdt\Iron\Nova\Network\Client;
 
 use Config;
 
+use swoole_client as SwooleClient;
+
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
-use swoole_client as SwooleClient;
 
 class Swoole
 {
@@ -110,7 +111,7 @@ class Swoole
         }
         else
         {
-            throw new ProtocolException('nova.decoding.failed');
+            throw new ProtocolException('nova.decoding.failed ~[client:'.strlen($data).']');
         }
     }
 
