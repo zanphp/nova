@@ -54,6 +54,11 @@ class Swoole
     private $processorExceptionB64 = 'gAEAAwAAABBzZXJ2ZXIucHJvY2Vzc29yAAAAAAsAAQAAABpzZXJ2ZXIucHJvY2Vzc29yLmV4Y2VwdGlvbggAAgAAAAAA';
 
     /**
+     * @var string
+     */
+    private $processTitlePrefix = 'php-nova: ';
+
+    /**
      * @param $verboseMode
      * @param $serverConfig
      * @param $platformConfig
@@ -204,11 +209,11 @@ class Swoole
         {
             if (function_exists('cli_set_process_title'))
             {
-                cli_set_process_title($title);
+                cli_set_process_title($this->processTitlePrefix.$title);
             }
             else
             {
-                swoole_set_process_name($title);
+                swoole_set_process_name($this->processTitlePrefix.$title);
             }
         }
     }
