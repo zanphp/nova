@@ -31,6 +31,16 @@ class Swoole
     /**
      * @var string
      */
+    private $serverHost = '0.0.0.0';
+
+    /**
+     * @var int
+     */
+    private $serverPort = 0;
+
+    /**
+     * @var string
+     */
     private $swooleConfKey = 'nova.swoole.server';
 
     /**
@@ -51,23 +61,89 @@ class Swoole
     public function startup($verboseMode, $serverConfig, $platformConfig)
     {
         $this->verboseMode = $verboseMode;
-        $this->instance = new SwooleServer($serverConfig['host'], $serverConfig['port']);
+        $this->serverHost = $serverConfig['host'];
+        $this->serverPort = $serverConfig['port'];
+
+        $this->instance = new SwooleServer($this->serverHost, $this->serverPort);
+
         $this->instance->set(Config::get($this->swooleConfKey));
         $this->instance->nova_config($platformConfig);
-        $this->instance->on('WorkerStart', [$this, 'processWorkerStart']);
+
+        $this->instance->on('start', [$this, 'processStart']);
+        $this->instance->on('workerStart', [$this, 'processWorkerStart']);
+        $this->instance->on('workerStop', [$this, 'processWorkerStop']);
+        $this->instance->on('workerError', [$this, 'processWorkerError']);
+        $this->instance->on('managerStart', [$this, 'processManagerStart']);
+        $this->instance->on('managerStop', [$this, 'processManagerStop']);
         $this->instance->on('receive', [$this, 'processServiceRequest']);
+        $this->instance->on('shutdown', [$this, 'processShutdown']);
+
         $this->instance->start();
     }
 
     /**
-     * process worker-starting
+     * @param SwooleServer $server
      */
-    public function processWorkerStart()
+    public function processStart(SwooleServer $server)
+    {
+        $this->logging('server starting', ['listen' => $this->serverHost.':'.$this->serverPort, 'pid' => $server->master_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     */
+    public function processShutdown(SwooleServer $server)
+    {
+        $this->logging('server closing', ['pid' => $server->master_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     */
+    public function processManagerStart(SwooleServer $server)
+    {
+        $this->logging('manager started', ['server' => $server->master_pid, 'pid' => $server->manager_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     */
+    public function processManagerStop(SwooleServer $server)
+    {
+        $this->logging('manager stopped', ['server' => $server->master_pid, 'pid' => $server->manager_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     * @param $worker_id
+     */
+    public function processWorkerStart(SwooleServer $server, $worker_id)
     {
         if (extension_loaded('opcache'))
         {
             opcache_reset();
         }
+        $this->logging('worker started', ['server' => $server->master_pid, 'id' => $server->worker_id, 'pid' => $server->worker_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     * @param $worker_id
+     */
+    public function processWorkerStop(SwooleServer $server, $worker_id)
+    {
+        $this->logging('worker stopped', ['server' => $server->master_pid, 'id' => $server->worker_id, 'pid' => $server->worker_pid]);
+    }
+
+    /**
+     * @param SwooleServer $server
+     * @param $worker_id
+     * @param $worker_pid
+     * @param $exit_code
+     */
+    public function processWorkerError(SwooleServer $server, $worker_id, $worker_pid, $exit_code)
+    {
+        $this->logging('worker error', ['server' => $server->master_pid, 'id' => $worker_id, 'pid' => $worker_pid, 'code' => $exit_code]);
     }
 
     /**
@@ -92,7 +168,7 @@ class Swoole
             }
             if ($this->verboseMode)
             {
-                echo sprintf('[%s]<||>[%s:%s]<||>%s<||>%s::%s<||>%d:%d', date('Y-m-d H:i:s'), long2ip($remoteIP), $remotePort, $seqNo, $serviceName, $methodName, strlen($novaData), strlen($outputBuffer)), "\n";
+                $this->logging('new-req', ['FROM' => long2ip($remoteIP).':'.$remotePort, 'SEQ' => $seqNo, 'URI' => $serviceName.'::'.$methodName, 'IO' => strlen($novaData).'-'.strlen($outputBuffer)]);
             }
         }
         catch (SysException $e)
@@ -109,5 +185,16 @@ class Swoole
         {
             $server->send($fd, 'NOVA.ENCODING.FAILED');
         }
+    }
+
+    /**
+     * @param $msg
+     * @param array $args
+     */
+    private function logging($msg, $args = [])
+    {
+        $buffer = [];
+        array_walk($args, function ($val, $key) use (&$buffer) { $buffer[] = $key.'='.$val; });
+        echo sprintf('[%s]<||>%s ~ %s', date('Y-m-d H:i:s'), $msg, implode('|', $buffer)), "\n";
     }
 }
