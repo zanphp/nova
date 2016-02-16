@@ -92,7 +92,7 @@ class Swoole
     public function processStart(SwooleServer $server)
     {
         $listen = $this->serverHost.':'.$this->serverPort;
-        $this->setProcessName('master process @ '.$listen);
+        $this->setProcessName('master process ('.$listen.')');
         $this->logging('server starting', ['listen' => $listen, 'pid' => $server->master_pid]);
     }
 
@@ -101,7 +101,7 @@ class Swoole
      */
     public function processShutdown(SwooleServer $server)
     {
-        $this->logging('server closing', ['pid' => $server->master_pid]);
+        $this->logging('server closed', ['pid' => $server->master_pid]);
     }
 
     /**
