@@ -177,7 +177,7 @@ class Swoole
             }
             if ($this->verboseMode)
             {
-                $this->logging('new-req', ['FROM' => long2ip($remoteIP).':'.$remotePort, 'SEQ' => $seqNo, 'URI' => $serviceName.'::'.$methodName, 'IO' => strlen($novaData).'-'.strlen($outputBuffer)]);
+                $this->logging('new-req', ['FROM' => long2ip($remoteIP).':'.$remotePort, 'SEQ' => $seqNo, 'URI' => $serviceName.'::'.$methodName, 'IO' => strlen($novaData).':'.strlen($execResult)]);
             }
         }
         catch (SysException $e)
