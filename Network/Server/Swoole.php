@@ -86,7 +86,9 @@ class Swoole
      */
     public function processStart(SwooleServer $server)
     {
-        $this->logging('server starting', ['listen' => $this->serverHost.':'.$this->serverPort, 'pid' => $server->master_pid]);
+        $listen = $this->serverHost.':'.$this->serverPort;
+        $this->setProcessName('master process @ '.$listen);
+        $this->logging('server starting', ['listen' => $listen, 'pid' => $server->master_pid]);
     }
 
     /**
@@ -102,6 +104,7 @@ class Swoole
      */
     public function processManagerStart(SwooleServer $server)
     {
+        $this->setProcessName('manager process');
         $this->logging('manager started', ['server' => $server->master_pid, 'pid' => $server->manager_pid]);
     }
 
@@ -119,6 +122,7 @@ class Swoole
      */
     public function processWorkerStart(SwooleServer $server, $worker_id)
     {
+        $this->setProcessName('worker # '.$worker_id);
         if (extension_loaded('opcache'))
         {
             opcache_reset();
@@ -184,6 +188,28 @@ class Swoole
         else
         {
             $server->send($fd, 'NOVA.ENCODING.FAILED');
+        }
+    }
+
+    /**
+     * @param $title
+     */
+    private function setProcessName($title)
+    {
+        if (strtolower(substr(php_uname('s'), 0, 6)) === 'darwin')
+        {
+            // ignore it under osx
+        }
+        else
+        {
+            if (function_exists('cli_set_process_title'))
+            {
+                cli_set_process_title($title);
+            }
+            else
+            {
+                swoole_set_process_name($title);
+            }
         }
     }
 
