@@ -167,8 +167,21 @@ class Swoole
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $novaData = $attachData = $execResult = $outputBuffer = null;
         try
         {
+            // TODO tmp add is_admin
+            Config::set('is_admin', false);
+            // TODO tmp add is _admin
             if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $novaData))
             {
+                // TODO tmp add is_admin
+                if (substr($attachData, 0, 1) == '{')
+                {
+                    $json = json_decode($attachData, true);
+                    if (is_array($json) && isset($json['op_is_admin']) && $json['op_is_admin'])
+                    {
+                        Config::set('is_admin', true);
+                    }
+                }
+                // TODO tmp add is_admin
                 $execResult = TransportServer::instance()->handle($serviceName, $methodName, $novaData);
             }
             else
