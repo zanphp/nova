@@ -33,6 +33,31 @@ class Swoole
     private $attachmentContent = '{}';
 
     /**
+     * @var string
+     */
+    private $reqServiceName = '';
+
+    /**
+     * @var string
+     */
+    private $reqMethodName = '';
+
+    /**
+     * @var string
+     */
+    private $reqSeqNo = '';
+
+    /**
+     * @var int
+     */
+    private $recvRetryMax = 3;
+
+    /**
+     * @var int
+     */
+    private $recvRetried = 0;
+
+    /**
      * @var object
      */
     private $client = null;
@@ -72,10 +97,13 @@ class Swoole
     public function send($serviceName, $methodName, $thriftBIN)
     {
         $this->setBusying();
+        $this->reqServiceName = $serviceName;
+        $this->reqMethodName = $methodName;
+        $this->reqSeqNo = nova_get_sequence();
+        $this->recvRetried = 0;
         $sockInfo = $this->client->getsockname();
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
-        $seqNo = nova_get_sequence();
         $sendBuffer = null;
         // TODO tmp add is_admin
         if (Config::get('is_admin'))
@@ -87,7 +115,7 @@ class Swoole
             $this->attachmentContent = '{}';
         }
         // TODO tmp add is _admin
-        if (nova_encode($serviceName, $methodName, $localIp, $localPort, $seqNo, $this->attachmentContent, $thriftBIN, $sendBuffer))
+        if (nova_encode($this->reqServiceName, $this->reqMethodName, $localIp, $localPort, $this->reqSeqNo, $this->attachmentContent, $thriftBIN, $sendBuffer))
         {
             $sent = $this->client->send($sendBuffer);
             if (false === $sent)
@@ -113,14 +141,26 @@ class Swoole
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
         }
-        // TODO tmp dump
-        //nova_dump_buffer($data);
-        // TODO tmp dump
-        $this->setIdling();
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN))
         {
-            return $thriftBIN;
+            if ($serviceName == $this->reqServiceName && $methodName == $this->reqMethodName && $seqNo == $this->reqSeqNo)
+            {
+                $this->setIdling();
+                return $thriftBIN;
+            }
+            else
+            {
+                if ($this->recvRetried < $this->recvRetryMax)
+                {
+                    $this->recvRetried ++;
+                    return $this->recv();
+                }
+                else
+                {
+                    throw new NetworkException('nova.client.recv.failed ~[retry:out]');
+                }
+            }
         }
         else
         {
