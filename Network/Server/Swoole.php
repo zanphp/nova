@@ -81,6 +81,7 @@ class Swoole
         $this->instance->on('managerStart', [$this, 'processManagerStart']);
         $this->instance->on('managerStop', [$this, 'processManagerStop']);
         $this->instance->on('receive', [$this, 'processServiceRequest']);
+        $this->instance->on('close', [$this, 'processConnClose']);
         $this->instance->on('shutdown', [$this, 'processShutdown']);
 
         $this->instance->start();
@@ -164,7 +165,15 @@ class Swoole
      */
     public function processServiceRequest(SwooleServer $server, $fd, $from_id, $data)
     {
-        $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $novaData = $attachData = $execResult = $outputBuffer = null;
+        $mstBegin = $mstFinish = null;
+
+        if ($this->verboseMode)
+        {
+            $mstBegin = microtime(true);
+        }
+
+        $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $novaData = $attachData = $execResult = $outputBuffer = $sendState = $reqState = null;
+
         try
         {
             // TODO tmp add is_admin
@@ -188,25 +197,57 @@ class Swoole
             {
                 throw new ProtocolException('nova.decoding.failed ~[server:'.strlen($data).']');
             }
-            if ($this->verboseMode)
-            {
-                $this->logging('new-req', ['FROM' => long2ip($remoteIP).':'.$remotePort, 'SEQ' => $seqNo, 'URI' => $serviceName.'::'.$methodName, 'IO' => strlen($novaData).':'.strlen($execResult)]);
-            }
         }
         catch (SysException $e)
         {
-            // default exception bin
-            $execResult = base64_decode($this->processorExceptionB64);
+            if ($seqNo)
+            {
+                // default exception bin
+                $execResult = base64_decode($this->processorExceptionB64);
+            }
         }
-        // encoding && sending
-        if (nova_encode($serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $this->attachmentContent, $execResult, $outputBuffer))
+
+        if (is_null($execResult))
         {
-            $server->send($fd, $outputBuffer);
+            // exec failed && no send
+            $sendState = false;
         }
         else
         {
-            $server->send($fd, 'NOVA.ENCODING.FAILED');
+            // encoding && sending
+            if (nova_encode($serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $this->attachmentContent, $execResult, $outputBuffer))
+            {
+                $sendState = $server->send($fd, $outputBuffer);
+            }
         }
+
+        if ($sendState)
+        {
+            $reqState = 'OK';
+        }
+        else
+        {
+            $reqState = 'ER';
+            $server->close($fd);
+        }
+
+        if ($this->verboseMode)
+        {
+            $mstFinish = microtime(true);
+            $mstUse = (string)round($mstFinish - $mstBegin, 3) . 's';
+
+            $this->logging('new-req', ['FROM' => long2ip($remoteIP).':'.$remotePort, 'SEQ' => $seqNo, 'URI' => $serviceName.'::'.$methodName, 'IO' => strlen($novaData).':'.strlen($execResult), 'ET' => $mstUse, 'STA' => $reqState]);
+        }
+    }
+
+    /**
+     * @param SwooleServer $server
+     * @param $fd
+     * @param $from_id
+     */
+    public function processConnClose(SwooleServer $server, $fd, $from_id)
+    {
+        $this->logging('conn closed', ['server' => $server->master_pid, 'conn' => $from_id, 'fd' => $fd]);
     }
 
     /**

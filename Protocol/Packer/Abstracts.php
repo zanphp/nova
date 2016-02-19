@@ -131,6 +131,9 @@ abstract class Abstracts
         }
         catch (SysException $e)
         {
+            // TODO tmp dump
+            //nova_dump_buffer($data);
+            // TODO tmp dump
             throw ExceptionPacket::instance()->ironExplode($e);
         }
     }

@@ -113,6 +113,9 @@ class Swoole
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
         }
+        // TODO tmp dump
+        //nova_dump_buffer($data);
+        // TODO tmp dump
         $this->setIdling();
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN))
