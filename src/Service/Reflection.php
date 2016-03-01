@@ -25,31 +25,17 @@ class Reflection
     /**
      * @var string
      */
-    private $kdtApiNS = 'kdt.api';
-
-    /**
-     * @var string
-     */
     private $kdtAppNS = 'kdt.app';
 
     /**
      * @var string
      */
-    private $kdtAppCtrl = '';
+    private $srvKeyword = 'service';
 
     /**
      * @var array
      */
-    private $refCache = ['interface' => [], 'controller' => [], 'client' => [], 'service' => []];
-
-    /**
-     * @param $serviceName
-     * @return string
-     */
-    public function getServiceController($serviceName)
-    {
-        return $this->getCachedClassName($serviceName, 'controller', function () use ($serviceName) { return $this->getNovaController($serviceName); });
-    }
+    private $refCache = ['interfaces' => [], 'implements' => [], 'clients' => [], 'specifications' => []];
 
     /**
      * @param $serviceName
@@ -57,7 +43,16 @@ class Reflection
      */
     public function getInterfaceClass($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'interface', 'interfaces');
+        return $this->getCachedClassName($serviceName, 'interfaces', 'interfaces');
+    }
+
+    /**
+     * @param $serviceName
+     * @return string
+     */
+    public function getImplementClass($serviceName)
+    {
+        return $this->getCachedClassName($serviceName, 'implements', $this->srvKeyword, $this->kdtAppNS, true);
     }
 
     /**
@@ -66,25 +61,27 @@ class Reflection
      */
     public function getClientClass($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'client', 'client');
+        return $this->getCachedClassName($serviceName, 'clients', $this->srvKeyword);
     }
 
     /**
      * @param $serviceName
      * @return string
      */
-    public function getServiceClass($serviceName)
+    public function getSpecificationClass($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'service', 'service');
+        return $this->getCachedClassName($serviceName, 'specifications', 'specx');
     }
 
     /**
      * @param $serviceName
      * @param $cacheKey
      * @param $scope
+     * @param $prefixNS
+     * @param $ucWord
      * @return string
      */
-    private function getCachedClassName($serviceName, $cacheKey, $scope)
+    private function getCachedClassName($serviceName, $cacheKey, $scope, $prefixNS = null, $ucWord = false)
     {
         if (isset($this->refCache[$cacheKey][$serviceName]))
         {
@@ -92,7 +89,7 @@ class Reflection
         }
         else
         {
-            $this->refCache[$cacheKey][$serviceName] = $class = is_string($scope) ? $this->getTargetNS($serviceName, $this->kdtApiNS, $scope) : call_user_func($scope);
+            $this->refCache[$cacheKey][$serviceName] = $class = $this->getTargetNS($serviceName, $prefixNS, $scope, $ucWord);
         }
         return $class;
     }
@@ -101,45 +98,53 @@ class Reflection
      * @param $serviceName
      * @param $prefixNS
      * @param $scopeName
+     * @param $ucWord
      * @return string
      */
-    private function getTargetNS($serviceName, $prefixNS, $scopeName = null)
+    private function getTargetNS($serviceName, $prefixNS = null, $scopeName = null, $ucWord = null)
     {
-        if (substr($serviceName, 0, strlen($this->comApiNS)) == $this->comApiNS)
+        if ($prefixNS)
         {
-            $serviceName = $prefixNS . substr($serviceName, strlen($this->comApiNS));
+            if ($prefixNS == $this->comApiNS)
+            {
+                // custom prefixNS is same of comApiNS | e.g. prefixNS = com.youzan, comApiNS = com.youzan
+                // do nothing
+            }
+            else
+            {
+                if (substr($serviceName, 0, strlen($this->comApiNS)) == $this->comApiNS)
+                {
+                    // serviceName is prefix with comApiNS -> replace with custom prefixNS
+                    $serviceName = $prefixNS . substr($serviceName, strlen($this->comApiNS));
+                }
+                else
+                {
+                    // replacement only deal with comApiNS prefix
+                    // do nothing
+                }
+            }
         }
-        $parts = explode('.', $serviceName);
-        // NS list
-        $nsKDT = array_shift($parts);
-        $nsAPI = array_shift($parts);
-        $nsAPP = array_shift($parts);
-        // pop service part
-        $service = ucfirst(array_pop($parts));
-        // pop scope part
-        $program = array_pop($parts);
-        // get namespace part
-        return '\\'.implode('\\', [$nsKDT, $nsAPI, $nsAPP]).'\\'.$scopeName.'\\'.implode('\\', $parts).'\\'.$program.'\\'.$service;
-    }
 
-    /**
-     * @param $serviceName
-     * @return string
-     */
-    private function getNovaController($serviceName)
-    {
-        $symbol = $this->getTargetNS($serviceName, $this->kdtAppNS, '~');
-        $namespace = str_replace('\\~', '', $symbol);
-        $programs = [];
-        $parts = explode('\\', $namespace);
-        // pop service part
-        $serviceClass = ucfirst(array_pop($parts));
-        // push controllers
-        array_push($parts, $this->kdtAppCtrl);
-        // uc-first all
-        array_walk($parts, function ($part) use (&$programs) {
-            $part && $programs[] = ucfirst($part);
+        $parts = explode('.', $serviceName);
+
+        // service-kw replace && upper-case parse
+        array_walk($parts, function ($part, $ix) use (&$parts, $scopeName, $ucWord) {
+            // service-kw
+            if ($part == $this->srvKeyword)
+            {
+                $parts[$ix] = $scopeName;
+            }
+            // upper-case word
+            if (true === $ucWord)
+            {
+                $parts[$ix] = ucfirst($parts[$ix]);
+            }
         });
-        return implode('\\', $programs).'\\'.$serviceClass;
+
+        // prepend namespace separator slot
+        array_unshift($parts, '');
+
+        // we got full namespace | ^ ^
+        return implode('\\', $parts);
     }
 }

@@ -163,7 +163,7 @@ class Scanner
      */
     private function isLocalHosting($serviceName)
     {
-        return class_exists($this->finder->getServiceController($serviceName));
+        return class_exists($this->finder->getServiceImplementClass($serviceName));
     }
 
     /**

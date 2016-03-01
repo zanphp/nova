@@ -40,18 +40,18 @@ class Finder
      * @param $serviceName
      * @return string
      */
-    public function getServiceController($serviceName)
+    public function getServiceImplementClass($serviceName)
     {
-        return $this->ref->getServiceController($serviceName);
+        return $this->ref->getImplementClass($serviceName);
     }
 
     /**
      * @param $serviceName
      * @return mixed
      */
-    public function getServiceControllerInstance($serviceName)
+    public function getServiceImplementObject($serviceName)
     {
-        return $this->objects->load($this->getServiceController($serviceName));
+        return $this->objects->load($this->getServiceImplementClass($serviceName));
     }
 
     /**
@@ -61,14 +61,14 @@ class Finder
      */
     public function getInputStruct($serviceName, $method)
     {
-        $clientCN = $this->ref->getClientClass($serviceName);
+        $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
-         * @var \Kdt\Iron\Nova\Foundation\TClient
+         * @var \Kdt\Iron\Nova\Foundation\TService
          */
-        $clientOJ = $this->objects->load($clientCN);
+        $serviceCJ = $this->objects->load($serviceCN);
 
-        $args = $clientOJ->getInputStructSpec($method);
+        $args = $serviceCJ->getInputStructSpec($method);
 
         return $args;
     }
@@ -80,7 +80,7 @@ class Finder
      */
     public function getOutputStruct($serviceName, $method)
     {
-        $serviceCN = $this->ref->getServiceClass($serviceName);
+        $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
          * @var \Kdt\Iron\Nova\Foundation\TService
@@ -99,7 +99,7 @@ class Finder
      */
     public function getExceptionStruct($serviceName, $method)
     {
-        $serviceCN = $this->ref->getServiceClass($serviceName);
+        $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
          * @var \Kdt\Iron\Nova\Foundation\TService

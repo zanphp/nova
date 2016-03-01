@@ -67,18 +67,6 @@ abstract class TClient
     }
 
     /**
-     * @return TService
-     */
-    private function getRelateService()
-    {
-        if (is_null($this->relateService))
-        {
-            $this->relateService = $this->serviceProvider();
-        }
-        return $this->relateService;
-    }
-
-    /**
      * @param $method
      * @param $arguments
      * @return mixed
@@ -91,12 +79,24 @@ abstract class TClient
     /**
      * @return Client
      */
-    private function getClient()
+    final private function getClient()
     {
         if (is_null($this->client))
         {
             $this->client = new Client($this->getRelateService()->getServiceName());
         }
         return $this->client;
+    }
+
+    /**
+     * @return TService
+     */
+    final private function getRelateService()
+    {
+        if (is_null($this->relateService))
+        {
+            $this->relateService = $this->serviceProvider();
+        }
+        return $this->relateService;
     }
 }

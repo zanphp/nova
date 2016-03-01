@@ -49,7 +49,7 @@ class Dispatcher
     {
         try
         {
-            $hostingCtrl = $this->finder->getServiceControllerInstance($serviceName);
+            $hostingCtrl = $this->finder->getServiceImplementObject($serviceName);
             if (method_exists($hostingCtrl, $methodName))
             {
                 $arguments = $this->convert->inputArgsToFuncArray($arguments, $this->finder->getInputStruct($serviceName, $methodName));

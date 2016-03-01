@@ -10,8 +10,6 @@ namespace Kdt\Iron\Nova\Transport;
 
 use Kdt\Iron\Nova\Network\Network;
 use Kdt\Iron\Nova\Protocol\Packer;
-use Kdt\Iron\Nova\Service\Convert;
-use Kdt\Iron\Nova\Service\Finder;
 use Thrift\Type\TMessageType;
 
 class Client
@@ -32,16 +30,6 @@ class Client
     private $network = null;
 
     /**
-     * @var Finder
-     */
-    private $finder = null;
-
-    /**
-     * @var Convert
-     */
-    private $convert = null;
-
-    /**
      * Client constructor.
      * @param $serviceName
      */
@@ -50,8 +38,6 @@ class Client
         $this->serviceName = $serviceName;
         $this->packer = Packer::newInstance();
         $this->network = Network::instance();
-        $this->finder = Finder::instance();
-        $this->convert = Convert::instance();
     }
 
     /**
