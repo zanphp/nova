@@ -30,7 +30,7 @@ class Scanner
     /**
      * @var string
      */
-    private $serviceDir = 'service';
+    private $specificationDir = 'servicespecification';
 
     /**
      * @var string
@@ -61,14 +61,15 @@ class Scanner
     }
 
     /**
+     * @param $rootPath
      * @param $appName
      * @return array
      */
-    public function scanApis($appName)
+    public function scanApis($rootPath, $appName)
     {
-        $this->kdtApiRoot = ROOT_PATH . $this->kdtApiPath . $appName;
+        $this->kdtApiRoot = $rootPath . $this->kdtApiPath . $appName;
         $this->stashInit();
-        $this->searching($this->kdtApiRoot . '/' .$this->serviceDir);
+        $this->searching($this->kdtApiRoot . '/' .$this->specificationDir);
         return $this->syntaxFormatting($this->stashFlush());
     }
 
@@ -108,7 +109,7 @@ class Scanner
             }
             else
             {
-                $this->parsingService($path);
+                $this->parsingSpecification($path);
             }
         }
     }
@@ -116,13 +117,13 @@ class Scanner
     /**
      * @param $file
      */
-    private function parsingService($file)
+    private function parsingSpecification($file)
     {
         $serviceCode = file_get_contents($file);
         $matched = preg_match($this->regexServiceName, $serviceCode, $matches);
         if ($matched && isset($matches[0]) && $this->isLocalHosting($matches[0]))
         {
-            $this->parsingInterface($matches[0], str_replace($this->getDirPattern($this->serviceDir), $this->getDirPattern($this->interfaceDir), $file));
+            $this->parsingInterface($matches[0], str_replace($this->getDirPattern($this->specificationDir), $this->getDirPattern($this->interfaceDir), $file));
         }
     }
 

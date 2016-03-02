@@ -72,7 +72,7 @@ class Server
             $this->verbose,
             Config::get($this->serverConfKey),
             array_merge(
-                Config::get($this->platformConfKey), ['services' => $this->scanner->scanApis(APP_NAME)]
+                Config::get($this->platformConfKey), ['services' => $this->scanner->scanApis(ROOT_PATH, APP_NAME)]
             )
         );
     }
