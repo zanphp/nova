@@ -70,7 +70,7 @@ class Reflection
      */
     public function getSpecificationClass($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'specifications', 'specx');
+        return $this->getCachedClassName($serviceName, 'specifications', 'servicespecification');
     }
 
     /**

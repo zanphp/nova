@@ -24,14 +24,14 @@ abstract class TClient
     private $client = null;
 
     /**
-     * @var TService
+     * @var TSpecification
      */
-    private $relateService = null;
+    private $relatedSpec = null;
 
     /**
-     * @return TService
+     * @return TSpecification
      */
-    abstract protected function serviceProvider();
+    abstract protected function specificationProvider();
 
     /**
      * @param $method
@@ -40,7 +40,7 @@ abstract class TClient
      */
     final public function getInputStructSpec($method, $args = [])
     {
-        $spec = $this->getRelateService()->getInputStructSpec($method);
+        $spec = $this->getRelatedSpec()->getInputStructSpec($method);
         foreach ($args as $i => $arg)
         {
             $spec[$i + 1]['value'] = $arg;
@@ -54,7 +54,7 @@ abstract class TClient
      */
     final public function getOutputStructSpec($method)
     {
-        return $this->getRelateService()->getOutputStructSpec($method);
+        return $this->getRelatedSpec()->getOutputStructSpec($method);
     }
 
     /**
@@ -63,7 +63,7 @@ abstract class TClient
      */
     final public function getExceptionStructSpec($method)
     {
-        return $this->getRelateService()->getExceptionStructSpec($method);
+        return $this->getRelatedSpec()->getExceptionStructSpec($method);
     }
 
     /**
@@ -83,20 +83,20 @@ abstract class TClient
     {
         if (is_null($this->client))
         {
-            $this->client = new Client($this->getRelateService()->getServiceName());
+            $this->client = new Client($this->getRelatedSpec()->getServiceName());
         }
         return $this->client;
     }
 
     /**
-     * @return TService
+     * @return TSpecification
      */
-    final private function getRelateService()
+    final private function getRelatedSpec()
     {
-        if (is_null($this->relateService))
+        if (is_null($this->relatedSpec))
         {
-            $this->relateService = $this->serviceProvider();
+            $this->relatedSpec = $this->specificationProvider();
         }
-        return $this->relateService;
+        return $this->relatedSpec;
     }
 }

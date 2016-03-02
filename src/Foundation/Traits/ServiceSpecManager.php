@@ -1,6 +1,6 @@
 <?php
 /**
- * Spec mgr (for api)
+ * Spec mgr (for service)
  * User: moyo
  * Date: 9/17/15
  * Time: 8:03 PM
@@ -8,7 +8,7 @@
 
 namespace Kdt\Iron\Nova\Foundation\Traits;
 
-trait ApiSpecManager
+trait ServiceSpecManager
 {
     /**
      * @var array

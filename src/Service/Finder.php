@@ -64,7 +64,7 @@ class Finder
         $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
-         * @var \Kdt\Iron\Nova\Foundation\TService
+         * @var \Kdt\Iron\Nova\Foundation\TSpecification
          */
         $serviceCJ = $this->objects->load($serviceCN);
 
@@ -83,7 +83,7 @@ class Finder
         $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
-         * @var \Kdt\Iron\Nova\Foundation\TService
+         * @var \Kdt\Iron\Nova\Foundation\TSpecification
          */
         $serviceCJ = $this->objects->load($serviceCN);
 
@@ -102,7 +102,7 @@ class Finder
         $serviceCN = $this->ref->getSpecificationClass($serviceName);
 
         /**
-         * @var \Kdt\Iron\Nova\Foundation\TService
+         * @var \Kdt\Iron\Nova\Foundation\TSpecification
          */
         $serviceCJ = $this->objects->load($serviceCN);
 

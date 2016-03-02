@@ -8,14 +8,14 @@
 
 namespace Kdt\Iron\Nova\Foundation;
 
-use Kdt\Iron\Nova\Foundation\Traits\ApiSpecManager;
+use Kdt\Iron\Nova\Foundation\Traits\ServiceSpecManager;
 
-abstract class TService
+abstract class TSpecification
 {
     /**
      * Spec mgr
      */
-    use ApiSpecManager;
+    use ServiceSpecManager;
 
     /**
      * @var string
