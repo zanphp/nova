@@ -1,6 +1,6 @@
 <?php
 /**
- * Abs TClient
+ * Abs TService
  * User: moyo
  * Date: 9/14/15
  * Time: 8:55 PM
@@ -11,7 +11,7 @@ namespace Kdt\Iron\Nova\Foundation;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Transport\Client;
 
-abstract class TClient
+abstract class TService
 {
     /**
      * Instance mgr

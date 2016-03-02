@@ -35,7 +35,7 @@ class Reflection
     /**
      * @var array
      */
-    private $refCache = ['interfaces' => [], 'implements' => [], 'clients' => [], 'specifications' => []];
+    private $refCache = ['interfaces' => [], 'implements' => [], 'services' => [], 'specifications' => []];
 
     /**
      * @param $serviceName
@@ -59,9 +59,9 @@ class Reflection
      * @param $serviceName
      * @return string
      */
-    public function getClientClass($serviceName)
+    public function getServiceClass($serviceName)
     {
-        return $this->getCachedClassName($serviceName, 'clients', $this->srvKeyword);
+        return $this->getCachedClassName($serviceName, 'services', $this->srvKeyword);
     }
 
     /**
