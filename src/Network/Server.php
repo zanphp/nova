@@ -68,12 +68,8 @@ class Server
      */
     public function run()
     {
-        $this->server->startup(
-            $this->verbose,
-            Config::get($this->serverConfKey),
-            array_merge(
-                Config::get($this->platformConfKey), ['services' => $this->scanner->scanApis(ROOT_PATH, APP_NAME)]
-            )
-        );
+        $services = $this->scanner->scanApis(ROOT_PATH, APP_NAME);
+        $config = array_merge(Config::get($this->platformConfKey), ['services' => $services] );
+        $this->server->startup($this->verbose, Config::get($this->serverConfKey),$config);
     }
 }

@@ -35,7 +35,12 @@ class Reflection
     /**
      * @var array
      */
-    private $refCache = ['interfaces' => [], 'implements' => [], 'services' => [], 'specifications' => []];
+    private $refCache = [
+        'interfaces' => [],
+        'implements' => [],
+        'services' => [],
+        'specifications' => []
+    ];
 
     /**
      * @param $serviceName

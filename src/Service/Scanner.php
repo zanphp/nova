@@ -123,7 +123,12 @@ class Scanner
         $matched = preg_match($this->regexServiceName, $serviceCode, $matches);
         if ($matched && isset($matches[0]) && $this->isLocalHosting($matches[0]))
         {
-            $this->parsingInterface($matches[0], str_replace($this->getDirPattern($this->specificationDir), $this->getDirPattern($this->interfaceDir), $file));
+            $file = str_replace(
+                $this->getDirPattern($this->specificationDir),
+                $this->getDirPattern($this->interfaceDir),
+                $file
+            );
+            $this->parsingInterface($matches[0], $file);
         }
     }
 
