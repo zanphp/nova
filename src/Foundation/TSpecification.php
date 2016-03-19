@@ -29,4 +29,12 @@ abstract class TSpecification
     {
         return $this->serviceName;
     }
+
+    /**
+     * @return array
+     */
+    final public function getServiceMethods()
+    {
+        return array_keys($this->inputStructSpec);
+    }
 }

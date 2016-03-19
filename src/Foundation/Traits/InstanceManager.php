@@ -28,6 +28,14 @@ trait InstanceManager
     }
 
     /**
+     * @return InstanceManager
+     */
+    final public static function getInstance()
+    {
+        return self::instance();
+    }
+
+    /**
      * @return static
      */
     final public static function newInstance()

@@ -1,22 +1,28 @@
 <?php
 /**
- * Service:Scanner
- * User: moyo
- * Date: 3/2/16
- * Time: 5:12 PM
+ * Created by IntelliJ IDEA.
+ * User: winglechen
+ * Date: 16/3/17
+ * Time: 11:09
  */
 
 namespace Kdt\Iron\Nova\Tests\Service;
 
+
 use Kdt\Iron\Nova\Service\Scanner;
 
-class ScannerTest extends \PHPUnit_Framework_TestCase
-{
-    public function test_scanApis()
+class ScannerTest extends \PHPUnit_Framework_TestCase {
+    public function testScanWork()
     {
-        require __DIR__.'/../mocks/service-scanner/src/Service/Entry.php';
-        $expectConfig = [['service' => 'com.youzan.test.service.entry', 'methods' => ['methodGet', 'methodPost']]];
-        $provideConfig = Scanner::instance()->scanApis(__DIR__.'/../mocks/service-scanner/', 'test');
-        $this->assertArraySubset($expectConfig, $provideConfig);
+        $scanner = Scanner::getInstance();
+
+        $dir = __DIR__ . '/../resource/material/sdk/gen-php/';
+        $dir = __DIR__ . '/../resource/sso/sdk/gen-php/';
+
+
+        $data = $scanner->scan($dir);
+
+
+
     }
 }

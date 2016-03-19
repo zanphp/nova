@@ -49,14 +49,21 @@ class Client
      */
     public function call($method, $inputArguments, $outputStruct, $exceptionStruct)
     {
-        $response = $this->packer->decode(
-            $this->network->request(
+        $response = $this->network->request(
                 $this->serviceName,
                 $method,
                 $this->packer->encode(TMessageType::CALL, $method, $inputArguments)
-            ),
+        );
+
+        $response = $this->packer->decode(
+            $response,
             $this->packer->struct($outputStruct, $exceptionStruct)
         );
-        return isset($response[$this->packer->successKey]) ? $response[$this->packer->successKey] : null;
+
+        $ret = isset($response[$this->packer->successKey])
+                    ? $response[$this->packer->successKey]
+                    : null;
+
+        return $ret;
     }
 }

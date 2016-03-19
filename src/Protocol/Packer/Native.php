@@ -8,7 +8,6 @@
 
 namespace Kdt\Iron\Nova\Protocol\Packer;
 
-use Kdt\Iron\Nova\Service\ExceptionPacket;
 use Kdt\Iron\Nova\Foundation\Protocol\TException as BizException;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
