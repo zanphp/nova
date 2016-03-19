@@ -1,5 +1,5 @@
 {
-  "name": "php-lib/nova-async",
+  "name": "zanphp/nova-async",
   "require": {
     "packaged/thrift": "0.9.2.1"
   },
