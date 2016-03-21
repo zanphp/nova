@@ -13,7 +13,7 @@ use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TException as ThriftException;
 use Exception as SysException;
-use Exception_Abstract as IronException;
+use Zan\Framework\Foundation\Exception\ZanException as IronException;
 
 class ExceptionPacket
 {
@@ -54,14 +54,6 @@ class ExceptionPacket
      */
     public function ironExplode(SysException $e)
     {
-        if ($e instanceof TApplicationException)
-        {
-            list($exception, $message, $code) = $this->messageExplode($e);
-            if ($exception)
-            {
-                return new $exception($message, $code);
-            }
-        }
         return new RpcException($e->getMessage(), $e->getCode());
     }
 

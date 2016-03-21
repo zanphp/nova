@@ -23,23 +23,11 @@ abstract class Pipe
     private $packer = null;
 
     /**
-     * @var Finder
-     */
-    private $finder = null;
-
-    /**
-     * @var Dispatcher
-     */
-    private $dispatcher = null;
-
-    /**
      * Via constructor.
      */
     final public function __construct()
     {
         $this->packer = Packer::newInstance();
-        $this->finder = Finder::instance();
-        $this->dispatcher = Dispatcher::instance();
     }
 
     /**

@@ -8,10 +8,9 @@
 
 namespace Kdt\Iron\Nova\Network\Client;
 
-use Config;
-
 use swoole_client as SwooleClient;
 
+use Zan\Framework\Foundation\Core\Config;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 
@@ -25,7 +24,7 @@ class Swoole
     /**
      * @var string
      */
-    private $swooleConfKey = 'nova.swoole.client';
+    private $swooleConfKey = 'nova.client.config';
 
     /**
      * @var string

@@ -8,10 +8,7 @@
 
 namespace Kdt\Iron\Nova\Network;
 
-use Config;
-
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\Network\Pipe\Local;
 use Kdt\Iron\Nova\Network\Pipe\Swoole;
 
 class Network
@@ -31,21 +28,7 @@ class Network
      */
     public function __construct()
     {
-        if (Config::get('nova_mode') == 'local')
-        {
-            if (isset($_SERVER['HTTP_VIA_RPC']) && strtolower($_SERVER['HTTP_VIA_RPC']) == 'nova')
-            {
-                // use swoole (by add http header [Via-RPC => nova])
-            }
-            else
-            {
-                $this->pipe = new Local();
-            }
-        }
-        if (is_null($this->pipe))
-        {
-            $this->pipe = new Swoole();
-        }
+        $this->pipe = new Swoole();
     }
 
     /**
