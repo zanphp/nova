@@ -29,6 +29,19 @@ trait StructSpecManager
     }
 
     /**
+     * @return array
+     */
+    public function toArray(){
+        $structSpec = $this->getStructSpec();
+        $arr = [];
+        foreach($structSpec as $struct){
+            $keyName =  $struct['var'];
+            $arr[$keyName] = $this->$keyName;
+        }
+        return $arr;
+    }
+
+    /**
      * for php-ext:thrift-protocol
      */
     private function staticSpecInjecting()
