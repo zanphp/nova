@@ -48,8 +48,6 @@ class Scanner
             $classMap->setSpec($className,$class);
             $registry->register($class);
         }
-
-        var_dump($classMap->getAllSpec());
     }
 
     private function getClassNameFromPath($path, $prefix, $suffix)

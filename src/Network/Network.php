@@ -39,6 +39,7 @@ class Network
      */
     public function request($serviceName, $methodName, $thriftBIN)
     {
+        echo "client request .....\n";
         if ($this->pipe->send($serviceName, $methodName, $thriftBIN))
         {
             return $this->pipe->recv();

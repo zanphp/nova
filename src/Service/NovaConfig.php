@@ -23,6 +23,13 @@ class NovaConfig {
         return $this->namespace;
     }
 
+    public function removeNovaNamespace($serviceName)
+    {
+        $novaNSLen = strlen($this->namespace);
+
+        return substr($serviceName, $novaNSLen);
+    }
+
     public function setNamespace($namespace)
     {
         $this->namespace = $namespace;

@@ -104,15 +104,8 @@ class Swoole
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
         $sendBuffer = null;
-        // TODO tmp add is_admin
-        if (Config::get('is_admin'))
-        {
-            $this->attachmentContent = json_encode(['op_is_admin' => true]);
-        }
-        else
-        {
-            $this->attachmentContent = '{}';
-        }
+        $this->attachmentContent = '{}';
+
         // TODO tmp add is _admin
         if (nova_encode($this->reqServiceName, $this->reqMethodName, $localIp, $localPort, $this->reqSeqNo, $this->attachmentContent, $thriftBIN, $sendBuffer))
         {
