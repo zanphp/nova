@@ -41,7 +41,7 @@ trait StructSpecManager
         return $arr;
     }
 
-    public function structConvertDb( array $dbMap){
+    public function toDb( array $dbMap){
         $structMap = $this->toArray();
 
         $record = [];
@@ -53,7 +53,7 @@ trait StructSpecManager
         return $record;
     }
 
-    public function dbConvertStruct(array $dbMap,array $data){
+    public function toStruct(array $dbMap,array $data){
         foreach($dbMap as $dbField => $structField){
             if(property_exists($this,$structField) && isset($data[$dbField])){
                 $this->$structField = $data[$dbField];
