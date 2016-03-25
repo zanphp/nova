@@ -7,7 +7,7 @@
  */
 
 namespace Kdt\Iron\Nova\Foundation\Traits;
-
+use Kdt\Iron\Nova\Foundation\Protocol\TStruct;
 trait StructSpecManager
 {
     /**
@@ -39,6 +39,27 @@ trait StructSpecManager
             $arr[$keyName] = $this->$keyName;
         }
         return $arr;
+    }
+
+    protected function structConvertDb(TStruct $tStruct, array $dbMap){
+        $structMap = $tStruct->toArray();
+
+        $record = [];
+        foreach($dbMap as $dbField => $structField){
+            if(isset($structMap[$structField])){
+                $record[$dbField] = $structMap[$structField];
+            }
+        }
+        return $record;
+    }
+
+    protected function dbConvertStruct(TStruct $sStruct,array $dbMap,array $data){
+        foreach($dbMap as $dbField => $structField){
+            if(isset($sStruct->$structField) && isset($data[$dbField])){
+                $sStruct->$structField = $data[$dbField];
+            }
+        }
+        return $sStruct;
     }
 
     /**
