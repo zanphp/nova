@@ -41,8 +41,8 @@ trait StructSpecManager
         return $arr;
     }
 
-    public function structConvertDb(TStruct $tStruct, array $dbMap){
-        $structMap = $tStruct->toArray();
+    public function structConvertDb( array $dbMap){
+        $structMap = $this->toArray();
 
         $record = [];
         foreach($dbMap as $dbField => $structField){
@@ -53,13 +53,13 @@ trait StructSpecManager
         return $record;
     }
 
-    public function dbConvertStruct(TStruct $sStruct,array $dbMap,array $data){
+    public function dbConvertStruct(array $dbMap,array $data){
         foreach($dbMap as $dbField => $structField){
-            if(isset($sStruct->$structField) && isset($data[$dbField])){
-                $sStruct->$structField = $data[$dbField];
+            if(isset($this->$structField) && isset($data[$dbField])){
+                $this->$structField = $data[$dbField];
             }
         }
-        return $sStruct;
+        return $this;
     }
 
     /**
