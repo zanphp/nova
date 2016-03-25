@@ -55,7 +55,7 @@ trait StructSpecManager
 
     public function dbConvertStruct(array $dbMap,array $data){
         foreach($dbMap as $dbField => $structField){
-            if(isset($this->$structField) && isset($data[$dbField])){
+            if(property_exists($this,$structField) && isset($data[$dbField])){
                 $this->$structField = $data[$dbField];
             }
         }
