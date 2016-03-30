@@ -34,17 +34,29 @@ class Registry {
         if(empty($this->map)) {
             return [];
         }
+        //return $this->map;
 
         $ret = [];
         foreach($this->map as $serviceName => $methods) {
-            foreach($methods as $method){
-                $ret[] = [
-                    $serviceName, $method
-                ];
-            }
+            $ret[] = [
+                'service' => $this->formatServiceName($serviceName),
+                'methods' => $methods,
+            ];
         }
 
         return $ret;
+    }
+
+
+    private function formatServiceName($serviceName)
+    {
+        $serviceArr = explode('.',$serviceName);
+        $className = array_pop($serviceArr);
+
+        $serviceArr = array_map('lcfirst',$serviceArr);
+        $serviceArr[] = $className;
+
+        return join('.', $serviceArr);
     }
 
 

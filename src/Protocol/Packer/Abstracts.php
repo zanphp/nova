@@ -125,14 +125,7 @@ abstract class Abstracts
      */
     final public function decode($data, $args)
     {
-        try
-        {
-            return $this->processDecode($data, $args);
-        }
-        catch (SysException $e)
-        {
-            throw ExceptionPacket::instance()->ironExplode($e);
-        }
+        return $this->processDecode($data, $args);
     }
 
     /**

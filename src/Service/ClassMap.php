@@ -14,8 +14,11 @@ class ClassMap {
     use InstanceManager;
 
     private $sepcMap = [];
+    private $search  = '\\Servicespecification\\';
+    private $replace = '\\Service\\';
     public function setSpec($key, $object)
     {
+        $key = $this->formatKey($key);
         $this->sepcMap[$key] = $object;
     }
 
@@ -30,6 +33,11 @@ class ClassMap {
     public function getAllSpec()
     {
         return $this->sepcMap;
+    }
+
+    private function formatKey($key)
+    {
+        return str_replace($this->search, $this->replace, $key);
     }
 
 }

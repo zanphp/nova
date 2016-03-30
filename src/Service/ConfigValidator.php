@@ -10,6 +10,7 @@ namespace Kdt\Iron\Nova\Service;
 
 
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Zan\Framework\Network\Tcp\Nova\Exception\FrameworkException;
 
 class ConfigValidator {
     use InstanceManager;
@@ -23,15 +24,26 @@ class ConfigValidator {
     public function validate($config)
     {
         $this->config = $config;
+
+        $this->validateNamespace();
+        $this->validatePath();
     }
 
     private function validateNamespace()
     {
-
+        if(!isset($this->config['namespace'])) {
+            throw new FrameworkException('nova namespace not defined');
+        }
     }
 
     private function validatePath()
     {
+        if(!isset($this->config['path'])) {
+            throw new FrameworkException('nova path not defined');
+        }
 
+        if(!is_dir($this->config['path'])) {
+            throw new FrameworkException('nova path is not valid');
+        }
     }
 }

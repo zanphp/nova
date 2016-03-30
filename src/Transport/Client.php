@@ -55,6 +55,7 @@ class Client
                 $this->packer->encode(TMessageType::CALL, $method, $inputArguments)
         );
 
+
         $response = $this->packer->decode(
             $response,
             $this->packer->struct($outputStruct, $exceptionStruct)

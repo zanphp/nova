@@ -45,6 +45,7 @@ abstract class TService
         {
             $spec[$i + 1]['value'] = $arg;
         }
+
         return $spec;
     }
 
@@ -83,9 +84,22 @@ abstract class TService
     {
         if (is_null($this->client))
         {
-            $this->client = new Client($this->getRelatedSpec()->getServiceName());
+            $serviceName = $this->getNovaServiceName();
+            $this->client = new Client($serviceName);
         }
         return $this->client;
+    }
+
+
+    final protected function getNovaServiceName()
+    {
+        $serviceName  = $this->getRelatedSpec()->getServiceName();
+        $nameArr = explode('.', $serviceName);
+        $className = array_pop($nameArr);
+        $nameArr = array_map('lcfirst', $nameArr);
+        $nameArr[] = $className;
+
+        return join('.', $nameArr);
     }
 
     /**

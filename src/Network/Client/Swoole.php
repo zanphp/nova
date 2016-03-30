@@ -8,10 +8,9 @@
 
 namespace Kdt\Iron\Nova\Network\Client;
 
-use Config;
-
 use swoole_client as SwooleClient;
 
+use Zan\Framework\Foundation\Core\Config;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 
@@ -25,7 +24,7 @@ class Swoole
     /**
      * @var string
      */
-    private $swooleConfKey = 'nova.swoole.client';
+    private $swooleConfKey = 'nova.client.config';
 
     /**
      * @var string
@@ -105,15 +104,8 @@ class Swoole
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
         $sendBuffer = null;
-        // TODO tmp add is_admin
-        if (Config::get('is_admin'))
-        {
-            $this->attachmentContent = json_encode(['op_is_admin' => true]);
-        }
-        else
-        {
-            $this->attachmentContent = '{}';
-        }
+        $this->attachmentContent = '{}';
+
         // TODO tmp add is _admin
         if (nova_encode($this->reqServiceName, $this->reqMethodName, $localIp, $localPort, $this->reqSeqNo, $this->attachmentContent, $thriftBIN, $sendBuffer))
         {
