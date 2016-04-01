@@ -46,7 +46,7 @@ trait StructSpecManager
 
         $record = [];
         foreach($dbMap as $dbField => $structField){
-            if($filter && in_array($structField,$filter)){
+            if($filter && (in_array($structField,$filter) || in_array($dbField,$filter))){
                 continue;
             }
             if(isset($structMap[$structField])){
