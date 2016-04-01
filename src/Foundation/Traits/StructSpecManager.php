@@ -41,11 +41,14 @@ trait StructSpecManager
         return $arr;
     }
 
-    public function toDb( array $dbMap){
+    public function toDb( array $dbMap,array $filter = []){
         $structMap = $this->toArray();
 
         $record = [];
         foreach($dbMap as $dbField => $structField){
+            if($filter && in_array($structField,$filter)){
+                continue;
+            }
             if(isset($structMap[$structField])){
                 $record[$dbField] = $structMap[$structField];
             }
