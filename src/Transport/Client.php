@@ -49,18 +49,24 @@ class Client
      */
     public function call($method, $inputArguments, $outputStruct, $exceptionStruct)
     {
+
         $response = $this->network->request(
                 $this->serviceName,
                 $method,
                 $this->packer->encode(TMessageType::CALL, $method, $inputArguments)
         );
-
-
         $response = $this->packer->decode(
             $response,
             $this->packer->struct($outputStruct, $exceptionStruct)
         );
 
+        if(isset($response['novaNullResult'])){
+            return null;
+        }
+        
+        if(isset($response['novaEmptyList'])){
+            return [];
+        }
         $ret = isset($response[$this->packer->successKey])
                     ? $response[$this->packer->successKey]
                     : null;

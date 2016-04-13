@@ -9,6 +9,10 @@
 namespace Kdt\Iron\Nova\Foundation;
 
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
+use Kdt\Iron\Nova\NullResult\NovaEmptyMapResult;
+use Kdt\Iron\Nova\NullResult\NovaEmptySetResult;
+use Kdt\Iron\Nova\NullResult\NovaNullResult;
 use Kdt\Iron\Nova\Transport\Client;
 
 abstract class TService
@@ -64,7 +68,7 @@ abstract class TService
      */
     final public function getExceptionStructSpec($method)
     {
-        return $this->getRelatedSpec()->getExceptionStructSpec($method);
+        return $this->getRelatedSpec()->getExceptionStructSpec($method, true);
     }
 
     /**
@@ -74,8 +78,40 @@ abstract class TService
      */
     final protected function apiCall($method, $arguments)
     {
-        return $this->getClient()->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
+        try{
+            $ret = $this->getClient()->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
+        }catch (\Exception $e) {
+            var_dump('exception:',$e);exit;
+            $nullResult = $this->handleNullResult($e);
+            if(false === $nullResult){
+                throw $e;
+            }
+            $ret = $nullResult;
+        }
+        return $ret;
     }
+
+    final protected function handleNullResult($e){
+        if(is_a($e, NovaNullResult::class)){
+            return null;
+        }
+
+        if(is_a($e, NovaEmptyListResult::class)){
+            return [];
+        }
+
+        if(is_a($e, NovaEmptySetResult::class)) {
+            return [];
+        }
+
+        if(is_a($e, NovaEmptyMapResult::class)) {
+            return [];
+        }
+
+        return false;
+    }
+
+
 
     /**
      * @return Client

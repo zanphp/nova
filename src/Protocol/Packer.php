@@ -58,23 +58,18 @@ class Packer
         $successStruct['var'] = $this->successKey;
         $successStruct['value'] = $successData;
 
-        if (is_array($exceptionStruct))
-        {
+        if (is_array($exceptionStruct)) {
             // init exception struct
-            foreach ($exceptionStruct as $eK => $eSpec)
-            {
-                if (is_object($exceptionData) && $eSpec['class'] === '\\'.get_class($exceptionData))
-                {
+            foreach ($exceptionStruct as $eK => $eSpec) {
+                if (is_object($exceptionData) && $eSpec['class'] === '\\'.get_class($exceptionData)) {
                     $exceptionStruct[$eK]['value'] = $exceptionData;
-                }
-                else
-                {
+                } else {
                     $exceptionStruct[$eK]['value'] = null;
                 }
             }
-        }
-        else
-        {
+        } elseif (null === $exceptionData){
+            
+        } else {
             $exceptionStruct = [];
         }
 
