@@ -76,9 +76,13 @@ class Native extends Abstracts
         $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
 
         $values = [];
-
         foreach ($args as $arg)
         {
+            if('novaEmptyList' == $arg['var']){
+//                var_dump($arg['value']);
+//                var_dump($arg['value'] instanceof BizException);exit;
+//                var_dump($arg['type'], TType::STRUCT);exit;
+            }
             if ($arg['type'] == TType::STRUCT && isset($arg['value']) && $arg['value'] instanceof BizException)
             {
                 throw $arg['value'];

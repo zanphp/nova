@@ -12,6 +12,8 @@ namespace Kdt\Iron\Nova\Service;
 
 use Kdt\Iron\Nova\Exception\RpcException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
+use Kdt\Iron\Nova\NullResult\NovaNullResult;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Thrift\Type\TMessageType;
 
@@ -33,21 +35,55 @@ class PackerFacade {
     {
         $spec = $this->getSpecClass($serviceName);
         $outputStruct = $spec->getOutputStructSpec($methodName);
-        $exceptionStruct = $spec->getExceptionStructSpec($methodName);
+        
+        $response = $this->parseNullResult($output);
+        $withNullExceptions = null !== $response['output'] ? false : true;
+        $exceptionStruct = $spec->getExceptionStructSpec($methodName, $withNullExceptions);
 
         $packer = Packer::getInstance();
-        $package = $packer->struct($outputStruct, $exceptionStruct, $output);
+        $package = $packer->struct($outputStruct, $exceptionStruct, $response['output'], $response['exception']);
 
         return $packer->encode(TMessageType::REPLY, $methodName, $package);
     }
-
-    public function encodeServiceException($serviceName, $methodName, $exception)
+    
+    protected function parseNullResult($output)
     {
-        //$spec = $this->getSpecClass($serviceName);
-        //$outputStruct = $spec->getOutputStructSpec($methodName);
-        //$exceptionStruct = $spec->getExceptionStructSpec($methodName);
+        $response = [
+            'output' => $output,
+            'exception' => null
+        ];
+        
+        if(null !== $output && [] !== $output){
+            return $response;
+        }
+        
+        $response['output'] = null;
+        if(null === $output){
+            $response['exception'] = new NovaNullResult();
+        }
+        
+        if([] === $output){
+            $response['exception'] = new NovaEmptyListResult();
+        }
+        
+        return $response; 
+    }
 
-        return Packer::getInstance()->encode(TMessageType::EXCEPTION, $methodName, $exception);
+    public function encodeServiceException($serviceName, $methodName, $exceptions)
+    {
+        $spec = $this->getSpecClass($serviceName);
+        $outputStruct = $spec->getOutputStructSpec($methodName);
+        $exceptionStruct = $spec->getExceptionStructSpec($methodName, true);
+
+        $packer = Packer::getInstance();
+        $package = $packer->struct($outputStruct, $exceptionStruct, null, $exceptions);
+
+        return $packer->encode(TMessageType::REPLY, $methodName, $package);
+//        $spec = $this->getSpecClass($serviceName);
+//        $outputStruct = $spec->getOutputStructSpec($methodName);
+//        $exceptionStruct = $spec->getExceptionStructSpec($methodName);
+//
+//        return Packer::getInstance()->encode(TMessageType::EXCEPTION, $methodName, $exception);
     }
 
 
