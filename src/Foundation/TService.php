@@ -78,40 +78,8 @@ abstract class TService
      */
     final protected function apiCall($method, $arguments)
     {
-        try{
-            $ret = $this->getClient()->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
-        }catch (\Exception $e) {
-            var_dump('exception:',$e);exit;
-            $nullResult = $this->handleNullResult($e);
-            if(false === $nullResult){
-                throw $e;
-            }
-            $ret = $nullResult;
-        }
-        return $ret;
+        return $this->getClient()->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
     }
-
-    final protected function handleNullResult($e){
-        if(is_a($e, NovaNullResult::class)){
-            return null;
-        }
-
-        if(is_a($e, NovaEmptyListResult::class)){
-            return [];
-        }
-
-        if(is_a($e, NovaEmptySetResult::class)) {
-            return [];
-        }
-
-        if(is_a($e, NovaEmptyMapResult::class)) {
-            return [];
-        }
-
-        return false;
-    }
-
-
 
     /**
      * @return Client
