@@ -129,7 +129,7 @@ class Swoole
     public function recv()
     {
         $data = $this->client->recv();
-        if (false === $data)
+        if (false === $data or '' == $data)
         {
             throw new NetworkException(socket_strerror($this->client->errCode), $this->client->errCode);
         }
