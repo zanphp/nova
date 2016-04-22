@@ -51,20 +51,21 @@ class Client implements Async
      * @throws ProtocolException
      * @return mixed
      */
-    public function recv($data) {
+    public function recv($data) 
+    {
         //release connection
         $this->_conn->release();
 
-        if (false === $data or '' == $data)
-        {
+        if (false === $data or '' == $data) {
             throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
         }
 
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
-        if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN))
-        {
-            if ($serviceName == $this->_reqServiceName && $methodName == $this->_reqMethodName && $seqNo == $this->_reqSeqNo)
-            {
+        if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
+            if ($serviceName == $this->_reqServiceName 
+                    && $methodName == $this->_reqMethodName 
+                    && $seqNo == $this->_reqSeqNo) {
+                
                 $response = $this->_packer->decode(
                     $thriftBIN,
                     $this->_packer->struct($this->_outputStruct, $this->_exceptionStruct)
@@ -86,14 +87,10 @@ class Client implements Async
                     : null;
 
                 call_user_func($this->_callback, $ret);
-            }
-            else
-            {
+            } else {
                 throw new NetworkException('nova.client.recv.failed ~[retry:out]');
             }
-        }
-        else
-        {
+        } else {
             throw new ProtocolException('nova.decoding.failed ~[client:'.strlen($data).']');
         }
     }
@@ -122,17 +119,13 @@ class Client implements Async
         $this->_outputStruct = $outputStruct;
         $this->_exceptionStruct = $exceptionStruct;
 
-        if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer))
-        {
+        if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer)) {
             $sent = $this->_sock->send($sendBuffer);
-            if (false === $sent)
-            {
+            if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
             }
             yield $this;
-        }
-        else
-        {
+        } else {
             throw new ProtocolException('nova.encoding.failed');
         }
     }
