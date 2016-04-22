@@ -81,11 +81,7 @@ abstract class TService
     final protected function apiCall($method, $arguments)
     {
         $serviceName = $this->getNovaServiceName();
-        $connection = (yield ConnectionManager::getInstance()->get($serviceName));
-        if ($connection instanceof \Generator) {
-            $connection = $connection->current();
-        }
-
+        $connection = (yield ConnectionManager::getInstance()->get('novaClient.Demo'));
         if (!($connection instanceof Connection)) {
             throw new \Exception('get nova connection error');
         }
