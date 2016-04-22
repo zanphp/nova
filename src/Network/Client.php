@@ -57,7 +57,10 @@ class Client implements Async
         $this->_conn->release();
 
         if (false === $data or '' == $data) {
-            throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
+            throw new NetworkException(
+                socket_strerror($this->_sock->errCode),
+                $this->_sock->errCode
+            );
         }
 
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
@@ -70,7 +73,6 @@ class Client implements Async
                     $thriftBIN,
                     $this->_packer->struct($this->_outputStruct, $this->_exceptionStruct)
                 );
-
 
                 if(isset($response['novaNullResult'])){
                     call_user_func($this->_callback, null);
