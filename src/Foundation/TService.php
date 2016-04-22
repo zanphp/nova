@@ -13,7 +13,9 @@ use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
 use Kdt\Iron\Nova\NullResult\NovaEmptyMapResult;
 use Kdt\Iron\Nova\NullResult\NovaEmptySetResult;
 use Kdt\Iron\Nova\NullResult\NovaNullResult;
-use Kdt\Iron\Nova\Transport\Client;
+use Kdt\Iron\Nova\Network\Client;
+use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Network\Connection\ConnectionManager;
 
 abstract class TService
 {
@@ -78,23 +80,20 @@ abstract class TService
      */
     final protected function apiCall($method, $arguments)
     {
-        return $this->getClient()->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
-    }
-
-    /**
-     * @return Client
-     */
-    final private function getClient()
-    {
-        if (is_null($this->client))
-        {
-            $serviceName = $this->getNovaServiceName();
-            $this->client = new Client($serviceName);
+        $serviceName = $this->getNovaServiceName();
+        $connection = (yield ConnectionManager::getInstance()->get($serviceName));
+        if ($connection instanceof \Generator) {
+            $connection = $connection->current();
         }
-        return $this->client;
+
+        if (!($connection instanceof Connection)) {
+            throw new \Exception('get nova connection error');
+        }
+
+        $client = new Client($connection, $serviceName);
+        yield $client->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
     }
-
-
+    
     final protected function getNovaServiceName()
     {
         $serviceName  = $this->getRelatedSpec()->getServiceName();
