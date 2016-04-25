@@ -8,11 +8,8 @@
 
 namespace Kdt\Iron\Nova\Foundation;
 
+use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
-use Kdt\Iron\Nova\NullResult\NovaEmptyMapResult;
-use Kdt\Iron\Nova\NullResult\NovaEmptySetResult;
-use Kdt\Iron\Nova\NullResult\NovaNullResult;
 use Kdt\Iron\Nova\Network\Client;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Network\Connection\ConnectionManager;
@@ -83,7 +80,7 @@ abstract class TService
         $serviceName = $this->getNovaServiceName();
         $connection = (yield ConnectionManager::getInstance()->get('nova.pfapi'));
         if (!($connection instanceof Connection)) {
-            throw new \Exception('get nova connection error');
+            throw new NetworkException('get nova connection error');
         }
 
         $client = new Client($connection, $serviceName);
