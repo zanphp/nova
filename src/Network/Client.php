@@ -68,11 +68,16 @@ class Client implements Async
             if ($serviceName == $this->_reqServiceName 
                     && $methodName == $this->_reqMethodName 
                     && $seqNo == $this->_reqSeqNo) {
-                
-                $response = $this->_packer->decode(
-                    $thriftBIN,
-                    $this->_packer->struct($this->_outputStruct, $this->_exceptionStruct)
-                );
+
+                try {
+                    $response = $this->_packer->decode(
+                        $thriftBIN,
+                        $this->_packer->struct($this->_outputStruct, $this->_exceptionStruct)
+                    );
+                } catch (\Exception $e) {
+                    call_user_func($this->_callback, null, $e);
+                    return;
+                }
 
                 if(isset($response['novaNullResult'])){
                     call_user_func($this->_callback, null);

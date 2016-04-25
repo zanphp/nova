@@ -21,8 +21,9 @@ abstract class TException extends SysException
     /**
      * TException constructor.
      */
-    public function __construct()
+    public function __construct($message = "", $code = 0, SysException $previous = null)
     {
         $this->staticSpecInjecting();
+        parent::__construct($message, $code, $previous);
     }
 }
