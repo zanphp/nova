@@ -10,6 +10,7 @@ namespace Kdt\Iron\Nova\Service;
 
 
 
+use Kdt\Iron\Nova\Exception\NovaException;
 use Kdt\Iron\Nova\Exception\RpcException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
@@ -24,6 +25,9 @@ class PackerFacade {
     public function decodeServiceArgs($serviceName, $methodName, $binArgs)
     {
         $spec = $this->getSpecClass($serviceName);
+        if (!$spec) {
+            throw new NovaException("no such serviceName spec");
+        }
         $inputStruct = $spec->getInputStructSpec($methodName);
 
         $args = Packer::getInstance()->decode($binArgs,$inputStruct);
@@ -35,6 +39,10 @@ class PackerFacade {
     public function encodeServiceOutput($serviceName, $methodName, $output)
     {
         $spec = $this->getSpecClass($serviceName);
+        if (!$spec) {
+            throw new NovaException("no such serviceName");
+        }
+
         $outputStruct = $spec->getOutputStructSpec($methodName);
         
         $response = $this->parseNullResult($output);
