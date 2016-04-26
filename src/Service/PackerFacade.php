@@ -11,7 +11,6 @@ namespace Kdt\Iron\Nova\Service;
 
 
 use Kdt\Iron\Nova\Exception\NovaException;
-use Kdt\Iron\Nova\Exception\RpcException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
 use Kdt\Iron\Nova\NullResult\NovaNullResult;
