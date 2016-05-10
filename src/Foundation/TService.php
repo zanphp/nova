@@ -78,7 +78,7 @@ abstract class TService
     final protected function apiCall($method, $arguments)
     {
         $serviceName = $this->getNovaServiceName();
-        $connection = (yield ConnectionManager::getInstance()->get('nova.pfapi'));
+        $connection = (yield ConnectionManager::getInstance()->get('connection.nova.pfapi'));
         if (!($connection instanceof Connection)) {
             throw new NetworkException('get nova connection error');
         }
