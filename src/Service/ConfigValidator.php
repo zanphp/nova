@@ -10,7 +10,7 @@ namespace Kdt\Iron\Nova\Service;
 
 
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
-use Zan\Framework\Network\Tcp\Nova\Exception\FrameworkException;
+use Kdt\Iron\Nova\Exception\FrameworkException;
 
 class ConfigValidator {
     use InstanceManager;
