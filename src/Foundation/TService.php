@@ -22,11 +22,6 @@ abstract class TService
     use InstanceManager;
 
     /**
-     * @var Client
-     */
-    private $client = null;
-
-    /**
      * @var TSpecification
      */
     private $relatedSpec = null;
@@ -73,7 +68,10 @@ abstract class TService
     /**
      * @param $method
      * @param $arguments
-     * @return mixed
+     * @return \Generator
+     * @throws NetworkException
+     * @throws \Kdt\Iron\Nova\Exception\ProtocolException
+     * @throws \Zan\Framework\Foundation\Exception\System\InvalidArgumentException
      */
     final protected function apiCall($method, $arguments)
     {
