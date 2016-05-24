@@ -20,7 +20,6 @@ class Client implements Async
 {
     private $_conn;
     private $_sock;
-    private $_callback;
     private $_serviceName;
     private $_currentContext;
     private static $_reqMap = [];
@@ -58,8 +57,6 @@ class Client implements Async
      */
     public function recv($data) 
     {
-        //release connection
-//        $this->_conn->release();
         if (false === $data or '' == $data) {
             throw new NetworkException(
                 socket_strerror($this->_sock->errCode),
