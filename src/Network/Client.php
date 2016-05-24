@@ -14,35 +14,40 @@ use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Utilities\DesignPattern\Singleton;
 
 class Client implements Async
 {
     private $_conn;
     private $_sock;
     private $_callback;
-    private $_packer;
     private $_serviceName;
+    private $_currentContext;
+    private static $_reqMap = [];
 
-    private $_reqServiceName;
-    private $_reqMethodName;
-    private $_reqSeqNo;
-    private $_attachmentContent = '{}';
-    
-    private $_outputStruct;
-    private $_exceptionStruct;
+    private static $_instance = null;
+
+    final public static function getInstance(Connection $conn, $serviceName)
+    {
+        if (null === static::$_instance[$serviceName]) {
+            static::$_instance[$serviceName] = new self($conn, $serviceName);
+        }
+        return static::$_instance[$serviceName];
+    }
 
     public function __construct(Connection $conn, $serviceName)
     {
         $this->_conn = $conn;
         $this->_sock = $conn->getSocket();
-        $this->_conn->setClientCb([$this, 'recv']);
-        $this->_packer = Packer::newInstance();
+        $this->_conn->setClientCb(function($data) {
+            $this->recv($data);
+        });
         $this->_serviceName = $serviceName;
     }
 
     public function execute(callable $callback)
     {
-        $this->_callback = $callback;
+        $this->_currentContext->setCb($callback);
     }
 
     /**
@@ -54,8 +59,7 @@ class Client implements Async
     public function recv($data) 
     {
         //release connection
-        $this->_conn->release();
-
+//        $this->_conn->release();
         if (false === $data or '' == $data) {
             throw new NetworkException(
                 socket_strerror($this->_sock->errCode),
@@ -65,38 +69,43 @@ class Client implements Async
 
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
-            if ($serviceName == $this->_reqServiceName 
-                    && $methodName == $this->_reqMethodName 
-                    && $seqNo == $this->_reqSeqNo) {
+            $context = isset(self::$_reqMap[$seqNo]) ? self::$_reqMap[$seqNo] : null;
+            if (!$context) {
+                throw new NetworkException('nova.client.recv.failed ~[context null]');
+            }
+            unset(self::$_reqMap[$seqNo]);
+            
+            $packer = $context->getPacker();
+            $cb = $context->getCb();
+            if ($serviceName == $context->getReqServiceName()
+                    && $methodName == $context->getReqMethodName()) {
 
                 try {
-                    $response = $this->_packer->decode(
+                    $response = $packer->decode(
                         $thriftBIN,
-                        $this->_packer->struct($this->_outputStruct, $this->_exceptionStruct)
+                        $packer->struct($context->getOutputStruct(), $context->getExceptionStruct())
                     );
                 } catch (\Exception $e) {
-                    call_user_func($this->_callback, null, $e);
+                    call_user_func($cb, null, $e);
                     return;
                 }
 
                 if(isset($response['novaNullResult'])){
-                    call_user_func($this->_callback, null);
+                    call_user_func($cb, null);
                     return;
                 }
 
                 if(isset($response['novaEmptyList'])){
-                    call_user_func($this->_callback, []);
+                    call_user_func($cb, []);
                     return;
                 }
 
-                $ret = isset($response[$this->_packer->successKey])
-                    ? $response[$this->_packer->successKey]
+                $ret = isset($response[$packer->successKey])
+                    ? $response[$packer->successKey]
                     : null;
 
-                call_user_func($this->_callback, $ret);
-            } else {
-                throw new NetworkException('nova.client.recv.failed ~[retry:out]');
-            }
+                call_user_func($cb, $ret);
+            } 
         } else {
             throw new ProtocolException('nova.decoding.failed ~[client:'.strlen($data).']');
         }
@@ -114,19 +123,29 @@ class Client implements Async
      */
     public function call($method, $inputArguments, $outputStruct, $exceptionStruct)
     {
-        $this->_reqServiceName = $this->_serviceName;
-        $this->_reqMethodName = $method;
-        $this->_reqSeqNo = nova_get_sequence();
-        $thriftBin = $this->_packer->encode(TMessageType::CALL, $method, $inputArguments);
+        $_reqSeqNo = nova_get_sequence(); 
+        $_attachmentContent = '{}';
+        $_packer = Packer::newInstance();
+        
+        $context = new ClientContext();
+        $context->setAttachmentContent($_attachmentContent);
+        $context->setOutputStruct($outputStruct);
+        $context->setExceptionStruct($exceptionStruct);
+        $context->setReqServiceName($this->_serviceName);
+        $context->setReqMethodName($method);
+        $context->setReqSeqNo($_reqSeqNo);
+        $context->setPacker($_packer);
+        
+        self::$_reqMap[$_reqSeqNo] = $context;
+        $this->_currentContext = $context;
+        
+        $thriftBin = $_packer->encode(TMessageType::CALL, $method, $inputArguments);
         $sockInfo = $this->_sock->getsockname();
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
         $sendBuffer = null;
-        $this->_attachmentContent = '{}';
-        $this->_outputStruct = $outputStruct;
-        $this->_exceptionStruct = $exceptionStruct;
 
-        if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer)) {
+        if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $sent = $this->_sock->send($sendBuffer);
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);

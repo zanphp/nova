@@ -77,11 +77,12 @@ abstract class TService
     {
         $serviceName = $this->getNovaServiceName();
         $connection = (yield ConnectionManager::getInstance()->get('connection.nova.pfapi'));
+        $connection->release();
         if (!($connection instanceof Connection)) {
             throw new NetworkException('get nova connection error');
         }
 
-        $client = new Client($connection, $serviceName);
+        $client = Client::getInstance($connection, $serviceName);
         yield $client->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
     }
     
