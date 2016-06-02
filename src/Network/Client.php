@@ -71,9 +71,12 @@ class Client implements Async
                 throw new NetworkException('nova.client.recv.failed ~[context null]');
             }
             unset(self::$_reqMap[$seqNo]);
-            
-            $packer = $context->getPacker();
             $cb = $context->getCb();
+            if ($serviceName === 'com.youzan.service.test' && $methodName === 'ping') {
+                return $this->pong($cb);
+            }
+            $packer = $context->getPacker();
+
             if ($serviceName == $context->getReqServiceName()
                     && $methodName == $context->getReqMethodName()) {
 
@@ -151,5 +154,39 @@ class Client implements Async
         } else {
             throw new ProtocolException('nova.encoding.failed');
         }
+    }
+
+    public function ping()
+    {
+        $_reqSeqNo = nova_get_sequence();
+        $method = 'ping';
+        $context = new ClientContext();
+        $context->setReqServiceName($this->_serviceName);
+        $context->setReqMethodName($method);
+        $context->setReqSeqNo($_reqSeqNo);
+
+        self::$_reqMap[$_reqSeqNo] = $context;
+        $this->_currentContext = $context;
+
+        $sockInfo = $this->_sock->getsockname();
+        $localIp = ip2long($sockInfo['host']);
+        $localPort = $sockInfo['port'];
+        $sendBuffer = null;
+
+        if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, '', '', $sendBuffer)) {
+            $sent = $this->_sock->send($sendBuffer);
+            if (false === $sent) {
+                throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
+            }
+            yield $this;
+        } else {
+            throw new ProtocolException('nova.encoding.failed');
+        }
+    }
+
+    public function pong($cb)
+    {
+        call_user_func($cb, true);
+        return;
     }
 }
