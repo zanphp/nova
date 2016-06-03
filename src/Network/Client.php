@@ -132,23 +132,27 @@ class Client implements Async
         $sendBuffer = null;
         $trace = (yield getContext('trace'));
 
+        $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
+        $msgId = Uuid::get();
+        $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
+        $trace->setRemoteCallMsgId($msgId);
         $attachment = [];
+
         if ($trace->getRootId()) {
             $attachment[Trace::TRACE_KEY]['rootId'] = $trace->getRootId();
         }
         if ($trace->getParentId()) {
             $attachment[Trace::TRACE_KEY]['parentId'] = $trace->getParentId();
         }
-
+        $attachment[Trace::TRACE_KEY]['eventId'] = $msgId;
         if (!empty($this->_attachmentContent)) {
             $this->_attachmentContent = json_encode($attachment);
         }
+        
         $this->_outputStruct = $outputStruct;
         $this->_exceptionStruct = $exceptionStruct;
 
         if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer)) {
-            $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
-            $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", Uuid::get());
             $sent = $this->_sock->send($sendBuffer);
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
