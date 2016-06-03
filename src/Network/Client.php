@@ -14,6 +14,8 @@ use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Sdk\Trace\Constant;
+use Zan\Framework\Utilities\Encrpt\Uuid;
 
 class Client implements Async
 {
@@ -30,6 +32,7 @@ class Client implements Async
     
     private $_outputStruct;
     private $_exceptionStruct;
+    private $_task;
 
     public function __construct(Connection $conn, $serviceName)
     {
@@ -42,6 +45,7 @@ class Client implements Async
 
     public function execute(callable $callback, $task)
     {
+        $this->_task = $task;
         $this->_callback = $callback;
     }
 
@@ -55,13 +59,16 @@ class Client implements Async
     {
         //release connection
         $this->_conn->release();
+        $trace = $this->_task->getContext()['trace'];
 
         if (false === $data or '' == $data) {
+            $trace->commit(socket_strerror($this->_sock->errCode));
             throw new NetworkException(
                 socket_strerror($this->_sock->errCode),
                 $this->_sock->errCode
             );
         }
+        $trace->commit(Constant::SUCCESS);
 
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
@@ -127,6 +134,9 @@ class Client implements Async
         $this->_exceptionStruct = $exceptionStruct;
 
         if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer)) {
+            $trace = (yield getContext('trace'));
+            $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
+            $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", Uuid::get());
             $sent = $this->_sock->send($sendBuffer);
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
