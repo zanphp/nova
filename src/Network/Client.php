@@ -59,7 +59,7 @@ class Client implements Async
     {
         //release connection
         $this->_conn->release();
-        $trace = $this->_task->getContext()['trace'];
+        $trace = $this->_task->getContext()->get('trace');
 
         if (false === $data or '' == $data) {
             $trace->commit(socket_strerror($this->_sock->errCode));
