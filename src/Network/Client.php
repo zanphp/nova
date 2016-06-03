@@ -15,6 +15,7 @@ use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Sdk\Trace\Constant;
+use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Utilities\Encrpt\Uuid;
 
 class Client implements Async
@@ -133,10 +134,10 @@ class Client implements Async
 
         $attachment = [];
         if ($trace->getRootId()) {
-            $attachment['rootId'] = $trace->getRootId();
+            $attachment[Trace::TRACE_KEY]['rootId'] = $trace->getRootId();
         }
         if ($trace->getParentId()) {
-            $attachment['parentId'] = $trace->getParentId();
+            $attachment[Trace::TRACE_KEY]['parentId'] = $trace->getParentId();
         }
 
         if (!empty($this->_attachmentContent)) {
