@@ -40,7 +40,7 @@ class Client implements Async
         $this->_serviceName = $serviceName;
     }
 
-    public function execute(callable $callback)
+    public function execute(callable $callback, $task)
     {
         $this->_callback = $callback;
     }
