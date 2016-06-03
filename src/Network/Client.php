@@ -129,12 +129,23 @@ class Client implements Async
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
         $sendBuffer = null;
-        $this->_attachmentContent = '{}';
+        $trace = (yield getContext('trace'));
+
+        $attachment = [];
+        if ($trace->getRootId()) {
+            $attachment['rootId'] = $trace->getRootId();
+        }
+        if ($trace->getParentId()) {
+            $attachment['parentId'] = $trace->getParentId();
+        }
+
+        if (!empty($this->_attachmentContent)) {
+            $this->_attachmentContent = json_encode($attachment);
+        }
         $this->_outputStruct = $outputStruct;
         $this->_exceptionStruct = $exceptionStruct;
 
         if (nova_encode($this->_reqServiceName, $this->_reqMethodName, $localIp, $localPort, $this->_reqSeqNo, $this->_attachmentContent, $thriftBin, $sendBuffer)) {
-            $trace = (yield getContext('trace'));
             $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
             $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", Uuid::get());
             $sent = $this->_sock->send($sendBuffer);
