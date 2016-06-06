@@ -16,6 +16,7 @@ use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Sdk\Trace\Constant;
 use Zan\Framework\Sdk\Trace\Trace;
+use Zan\Framework\Sdk\Trace\TraceBuilder;
 use Zan\Framework\Utilities\Encrpt\Uuid;
 
 class Client implements Async
@@ -133,7 +134,7 @@ class Client implements Async
         $trace = (yield getContext('trace'));
 
         $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
-        $msgId = Uuid::get();
+        $msgId = TraceBuilder::generateId();
         $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
         $trace->setRemoteCallMsgId($msgId);
         $attachment = [];
