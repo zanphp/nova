@@ -134,7 +134,8 @@ class Client implements Async
         $trace = (yield getContext('trace'));
 
         $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
-        $msgId = TraceBuilder::generateId();
+        //$msgId = TraceBuilder::generateId();
+        $msgId = Uuid::get();
         $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
         $trace->setRemoteCallMsgId($msgId);
         $attachment = [];
