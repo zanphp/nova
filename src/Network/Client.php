@@ -28,10 +28,11 @@ class Client implements Async
 
     final public static function getInstance(Connection $conn, $serviceName)
     {
-        if (null === static::$_instance[$serviceName]) {
-            static::$_instance[$serviceName] = new self($conn, $serviceName);
+        $key = spl_object_hash($conn);
+        if (null === static::$_instance[$key]) {
+            static::$_instance[$key] = new self($conn, $serviceName);
         }
-        return static::$_instance[$serviceName];
+        return static::$_instance[$key];
     }
 
     public function __construct(Connection $conn, $serviceName)
