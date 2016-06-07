@@ -72,7 +72,7 @@ class Client implements Async
             }
             unset(self::$_reqMap[$seqNo]);
             $cb = $context->getCb();
-            if ($serviceName === 'com.youzan.service.test' && $methodName === 'ping') {
+            if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
                 return $this->pong($cb);
             }
             $packer = $context->getPacker();
