@@ -61,18 +61,18 @@ class PackerFacade {
             'exception' => null
         ];
         
-        if(null !== $output && [] !== $output){
-            return $response;
-        }
-        
-        $response['output'] = null;
-        if(null === $output){
-            $response['exception'] = new NovaNullResult();
-        }
-        
-        if([] === $output){
-            $response['exception'] = new NovaEmptyListResult();
-        }
+//        if(null !== $output && [] !== $output){
+//            return $response;
+//        }
+//
+//        $response['output'] = null;
+//        if(null === $output){
+//            $response['exception'] = new NovaNullResult();
+//        }
+//
+//        if([] === $output){
+//            $response['exception'] = new NovaEmptyListResult();
+//        }
         
         return $response; 
     }
