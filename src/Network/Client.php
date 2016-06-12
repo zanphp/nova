@@ -79,15 +79,15 @@ class Client implements Async
                     return;
                 }
 
-                if(isset($response['novaNullResult'])){
-                    call_user_func($this->_callback, null);
-                    return;
-                }
-
-                if(isset($response['novaEmptyList'])){
-                    call_user_func($this->_callback, []);
-                    return;
-                }
+//                if(isset($response['novaNullResult'])){
+//                    call_user_func($this->_callback, null);
+//                    return;
+//                }
+//
+//                if(isset($response['novaEmptyList'])){
+//                    call_user_func($this->_callback, []);
+//                    return;
+//                }
 
                 $ret = isset($response[$this->_packer->successKey])
                     ? $response[$this->_packer->successKey]
