@@ -147,6 +147,7 @@ class Client implements Async
         $sendBuffer = null;
 
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
+            $this->_conn->setLastUsedTime();
             $sent = $this->_sock->send($sendBuffer);
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
@@ -175,6 +176,7 @@ class Client implements Async
         $sendBuffer = null;
 
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, '', '', $sendBuffer)) {
+            $this->_conn->setLastUsedTime();
             $sent = $this->_sock->send($sendBuffer);
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
