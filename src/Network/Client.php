@@ -167,7 +167,7 @@ handle_exception:
 
         $trace = (yield getContext('trace'));
 
-        $trace->transactionBegin(Constant::NOVA, $this->_reqServiceName . '.' . $this->_reqMethodName);
+        $trace->transactionBegin(Constant::NOVA, $this->_serviceName . '.' . $method);
         $msgId = TraceBuilder::generateId();
         $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
         $trace->setRemoteCallMsgId($msgId);
