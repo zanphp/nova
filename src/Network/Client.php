@@ -97,17 +97,6 @@ class Client implements Async
                     call_user_func($cb, null, $e);
                     return;
                 }
-                if(isset($response['novaNullResult'])){
-                    $trace->commit(Constant::SUCCESS);
-                    call_user_func($cb, null);
-                    return;
-                }
-
-                if(isset($response['novaEmptyList'])){
-                    $trace->commit(Constant::SUCCESS);
-                    call_user_func($cb, []);
-                    return;
-                }
 
                 $ret = isset($response[$packer->successKey])
                     ? $response[$packer->successKey]
@@ -181,9 +170,7 @@ handle_exception:
             $attachment[Trace::TRACE_KEY]['parentId'] = $trace->getParentId();
         }
         $attachment[Trace::TRACE_KEY]['eventId'] = $msgId;
-        if (!empty($this->_attachmentContent)) {
-            $this->_attachmentContent = json_encode($attachment);
-        }
+        $_attachmentContent = json_encode($attachment);
         
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
