@@ -125,7 +125,7 @@ handle_exception:
         foreach (self::$_reqMap as $req) {
             $trace = $req->getTask()->getContext()->get('trace');
             $trace->commit(socket_strerror($this->_sock->errCode));
-            $trace->getTask()->sendException($exception);
+            $req->getTask()->sendException($exception);
         }
 
         $this->_conn->close();
