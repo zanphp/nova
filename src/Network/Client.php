@@ -115,6 +115,7 @@ class Client implements Async
 
                 $trace->commit(Constant::SUCCESS);
                 call_user_func($cb, $ret);
+                return;
             } 
         } else {
             $exception = new ProtocolException('nova.decoding.failed ~[client:'.strlen($data).']');
