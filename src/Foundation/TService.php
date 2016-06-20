@@ -12,7 +12,7 @@ use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Network\Client;
 use Zan\Framework\Contract\Network\Connection;
-use Zan\Framework\Network\Connection\ConnectionManager;
+use Zan\Framework\Network\Connection\NovaClientConnectionManager;
 
 abstract class TService
 {
@@ -76,12 +76,12 @@ abstract class TService
     final protected function apiCall($method, $arguments)
     {
         $serviceName = $this->getNovaServiceName();
-        $connection = (yield ConnectionManager::getInstance()->get('nova.pfapi'));
+        $connection = (yield NovaClientConnectionManager::getInstance()->get($serviceName, $method));
         if (!($connection instanceof Connection)) {
             throw new NetworkException('get nova connection error');
         }
 
-        $client = new Client($connection, $serviceName);
+        $client = Client::getInstance($connection, $serviceName);
         yield $client->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
     }
     
