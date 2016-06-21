@@ -188,6 +188,7 @@ handle_exception:
 
 handle_exception:
         $trace->commit($exception);
+        throw $exception;
     }
 
     public function ping()
