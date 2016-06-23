@@ -9,6 +9,7 @@
 namespace Kdt\Iron\Nova\Network;
 
 use Kdt\Iron\Nova\Protocol\Packer;
+use Thrift\Exception\TApplicationException;
 use Thrift\Type\TMessageType;
 use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
@@ -93,7 +94,13 @@ class Client implements Async
                         $packer->struct($context->getOutputStruct(), $context->getExceptionStruct())
                     );
                 } catch (\Exception $e) {
-                    $trace->commit($e->getTraceAsString());
+                    if ($e instanceof TApplicationException) {
+                        //只有系统异常上报异常信息
+                        $trace->commit($e->getTraceAsString());
+                    } else {
+                        $trace->commit(Constant::SUCCESS);
+                    }
+
                     call_user_func($cb, null, $e);
                     return;
                 }
