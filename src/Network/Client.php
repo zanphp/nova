@@ -171,12 +171,12 @@ handle_exception:
         $attachment = [];
 
         if ($trace->getRootId()) {
-            $attachment[Trace::TRACE_KEY]['rootId'] = $trace->getRootId();
+            $attachment[Trace::TRACE_KEY]['rootId'] = $attachment[Trace::TRACE_KEY][Trace::ROOT_ID_KEY] = $trace->getRootId();
         }
         if ($trace->getParentId()) {
-            $attachment[Trace::TRACE_KEY]['parentId'] = $trace->getParentId();
+            $attachment[Trace::TRACE_KEY]['parentId'] = $attachment[Trace::TRACE_KEY][Trace::PARENT_ID_KEY] = $trace->getParentId();
         }
-        $attachment[Trace::TRACE_KEY]['eventId'] = $msgId;
+        $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         $_attachmentContent = json_encode($attachment);
         
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
