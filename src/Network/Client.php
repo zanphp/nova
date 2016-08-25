@@ -94,11 +94,13 @@ class Client implements Async
                         $packer->struct($context->getOutputStruct(), $context->getExceptionStruct())
                     );
                 } catch (\Exception $e) {
-                    if ($e instanceof TApplicationException) {
-                        //只有系统异常上报异常信息
-                        $trace->commit($e->getTraceAsString());
-                    } else {
-                        $trace->commit(Constant::SUCCESS);
+                    if (null !== $trace) {
+                        if ($e instanceof TApplicationException) {
+                            //只有系统异常上报异常信息
+                            $trace->commit($e->getTraceAsString());
+                        } else {
+                            $trace->commit(Constant::SUCCESS);
+                        }
                     }
 
                     call_user_func($cb, null, $e);
@@ -108,8 +110,9 @@ class Client implements Async
                 $ret = isset($response[$packer->successKey])
                     ? $response[$packer->successKey]
                     : null;
-
-                $trace->commit(Constant::SUCCESS);
+                if (null !== $trace) {
+                    $trace->commit(Constant::SUCCESS);
+                }
                 call_user_func($cb, $ret);
                 return;
             } 
@@ -120,8 +123,10 @@ class Client implements Async
 
 handle_exception:
         foreach (self::$_reqMap as $req) {
-            $trace = $req->getTask()->getContext()->get('trace');
-            $trace->commit(socket_strerror($this->_sock->errCode));
+            if (null !== $trace) {
+                $trace = $req->getTask()->getContext()->get('trace');
+                $trace->commit(socket_strerror($this->_sock->errCode));
+            }
             $req->getTask()->sendException($exception);
         }
 
@@ -163,20 +168,21 @@ handle_exception:
         $sendBuffer = null;
 
         $trace = (yield getContext('trace'));
-
-        $trace->transactionBegin(Constant::NOVA_CLIENT, $this->_serviceName . '.' . $method);
-        $msgId = TraceBuilder::generateId();
-        $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
-        $trace->setRemoteCallMsgId($msgId);
         $attachment = [];
 
-        if ($trace->getRootId()) {
-            $attachment[Trace::TRACE_KEY]['rootId'] = $attachment[Trace::TRACE_KEY][Trace::ROOT_ID_KEY] = $trace->getRootId();
+        if (null !== $trace) {
+            $trace->transactionBegin(Constant::NOVA_CLIENT, $this->_serviceName . '.' . $method);
+            $msgId = TraceBuilder::generateId();
+            $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
+            $trace->setRemoteCallMsgId($msgId);
+            if ($trace->getRootId()) {
+                $attachment[Trace::TRACE_KEY]['rootId'] = $attachment[Trace::TRACE_KEY][Trace::ROOT_ID_KEY] = $trace->getRootId();
+            }
+            if ($trace->getParentId()) {
+                $attachment[Trace::TRACE_KEY]['parentId'] = $attachment[Trace::TRACE_KEY][Trace::PARENT_ID_KEY] = $trace->getParentId();
+            }
+            $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         }
-        if ($trace->getParentId()) {
-            $attachment[Trace::TRACE_KEY]['parentId'] = $attachment[Trace::TRACE_KEY][Trace::PARENT_ID_KEY] = $trace->getParentId();
-        }
-        $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         $_attachmentContent = json_encode($attachment);
         
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
@@ -194,7 +200,9 @@ handle_exception:
         }
 
 handle_exception:
-        $trace->commit($exception);
+        if (null !== $trace) {
+            $trace->commit($exception);
+        }
         throw $exception;
     }
 
