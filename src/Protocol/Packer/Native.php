@@ -179,7 +179,7 @@ class Native extends Abstracts
                 },
         ];
 
-        $callbacks[TType::MAP] = function (&$xfer, $items) use ($output, $callbacks)
+        $callbacks[TType::MAP] = function (&$xfer, $items) use ($output, &$callbacks)
         {
             if (!is_array($items['value']))
             {
@@ -200,7 +200,7 @@ class Native extends Abstracts
             $xfer += $output->writeFieldEnd();
         };
 
-        $callbacks[TType::LST] = function (&$xfer, $items) use ($output, $callbacks)
+        $callbacks[TType::LST] = function (&$xfer, $items) use ($output, &$callbacks)
         {
             if (!is_array($items['value']))
             {
@@ -346,7 +346,7 @@ class Native extends Abstracts
                 }
         ];
 
-        $callbacks[TType::MAP] = function (&$items, &$xfer) use ($input, $callbacks)
+        $callbacks[TType::MAP] = function (&$items, &$xfer) use ($input, &$callbacks)
         {
             $kType = $items['ktype'];
             $vType = $items['vtype'];
@@ -374,7 +374,7 @@ class Native extends Abstracts
             $items['value'] = $mapResult;
         };
 
-        $callbacks[TType::LST] = function (&$items, &$xfer) use ($input, $callbacks)
+        $callbacks[TType::LST] = function (&$items, &$xfer) use ($input, &$callbacks)
         {
             $items['value'] = array();
             $size = 0;
