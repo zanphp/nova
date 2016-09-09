@@ -76,6 +76,7 @@ class Native extends Abstracts
         $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
 
         $values = [];
+
         foreach ($args as $arg)
         {
             if ($arg['type'] == TType::STRUCT && isset($arg['value']) && $arg['value'] instanceof BizException)
@@ -189,11 +190,12 @@ class Native extends Abstracts
 
             foreach ($items['key'] as $ki => $keyType)
             {
-                $valType = $items['val'][$ki];
+                $valSpec = $items['val'];
+                $valType = $valSpec[$ki];
                 foreach ($items['value'] as $key => $val)
                 {
                     $callbacks[$keyType]($xfer, array('value' => $key));
-                    $callbacks[$valType]($xfer, array('value' => $val));
+                    $callbacks[$valType]($xfer, array_merge($valSpec, array('value' => $val)));
                 }
             }
             $output->writeMapEnd();
@@ -208,9 +210,10 @@ class Native extends Abstracts
             }
             $output->writeListBegin($items['etype'], count($items['value']));
 
+            $valSpec = $items['elem'];
             foreach ($items['value'] as $item)
             {
-                $callbacks[$items['elem']['type']]($xfer, array('value' => $item));
+                $callbacks[$valSpec['type']]($xfer, array_merge($valSpec, array('value' => $item)));
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
