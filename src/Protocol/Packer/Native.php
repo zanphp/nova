@@ -23,6 +23,26 @@ class Native extends Abstracts
     private $getSpecFunc = 'getStructSpec';
 
     /**
+     * @var array
+     */
+    private $rCallbacks = [];
+
+    /**
+     * @var array
+     */
+    private $wCallbacks = [];
+
+    /**
+     * Native constructor.
+     */
+    protected function constructing()
+    {
+        parent::constructing();
+
+        $this->genCallbacks();
+    }
+
+    /**
      * @param $type
      * @param $name
      * @param $args
@@ -76,6 +96,7 @@ class Native extends Abstracts
         $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
 
         $values = [];
+
         foreach ($args as $arg)
         {
             if ($arg['type'] == TType::STRUCT && isset($arg['value']) && $arg['value'] instanceof BizException)
@@ -121,108 +142,13 @@ class Native extends Abstracts
      */
     private function writeArgByType($key, $item, &$xfer)
     {
-        $output = $this->outputBin;
         $type = $item['type'];
 
-        $callbacks = [
-            TType::BOOL =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeBool($item['value']);
-                },
-            TType::BYTE =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeByte($item['value']);
-                },
-            TType::DOUBLE =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeDouble($item['value']);
-                },
-            TType::I16 =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeI16($item['value']);
-                },
-            TType::I32 =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeI32($item['value']);
-                },
-            TType::I64 =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeI64($item['value']);
-                },
-            TType::STRING =>
-                function (&$xfer, $item) use ($output)
-                {
-                    $xfer += $output->writeString($item['value']);
-                },
-            TType::STRUCT =>
-                function (&$xfer, $item) use ($output)
-                {
-                    if (is_object($item['value']) && method_exists($item['value'], $this->getSpecFunc))
-                    {
-                        $subArgs = call_user_func([$item['value'], $this->getSpecFunc]);
-                        foreach ($subArgs as &$subArg)
-                        {
-                            $subArg['value'] = $item['value']->{$subArg['var']};
-                        }
-                        $xfer += $this->structWrite($subArgs);
-                    }
-                    else
-                    {
-                        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-                    }
-                },
-        ];
-
-        $callbacks[TType::MAP] = function (&$xfer, $items) use ($output, $callbacks)
+        if (isset($this->rCallbacks[$type]))
         {
-            if (!is_array($items['value']))
-            {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $output->writeMapBegin($items['ktype'], $items['vtype'], count($items['value']));
-
-            foreach ($items['key'] as $ki => $keyType)
-            {
-                $valType = $items['val'][$ki];
-                foreach ($items['value'] as $key => $val)
-                {
-                    $callbacks[$keyType]($xfer, array('value' => $key));
-                    $callbacks[$valType]($xfer, array('value' => $val));
-                }
-            }
-            $output->writeMapEnd();
-            $xfer += $output->writeFieldEnd();
-        };
-
-        $callbacks[TType::LST] = function (&$xfer, $items) use ($output, $callbacks)
-        {
-            if (!is_array($items['value']))
-            {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $output->writeListBegin($items['etype'], count($items['value']));
-
-            foreach ($items['value'] as $item)
-            {
-                $callbacks[$items['elem']['type']]($xfer, array('value' => $item));
-            }
-            $output->writeListEnd();
-            $xfer += $output->writeFieldEnd();
-        };
-
-        $callbacks[TType::SET] = $callbacks[TType::LST];
-
-        if (isset($callbacks[$type]))
-        {
-            $xfer += $output->writeFieldBegin($item['var'], $type, $key);
-            $callbacks[$type]($xfer, $item);
-            $xfer += $output->writeFieldEnd();
+            $xfer += $this->outputBin->writeFieldBegin($item['var'], $type, $key);
+            $this->rCallbacks[$type]($xfer, $item);
+            $xfer += $this->outputBin->writeFieldEnd();
         }
         else
         {
@@ -278,127 +204,234 @@ class Native extends Abstracts
      */
     private function setArg(&$item, $fType, &$xfer)
     {
-        $input = $this->inputBin;
         $type = $item['type'];
         $item['value'] = null;
 
-        $callbacks = [
-            TType::BOOL =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readBool($item['value']);
-                },
-            TType::BYTE =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readByte($item['value']);
-                },
-            TType::DOUBLE =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readDouble($item['value']);
-                },
-            TType::I16 =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readI16($item['value']);
-                },
-            TType::I32 =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readI32($item['value']);
-                },
-            TType::I64 =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readI64($item['value']);
-                },
-            TType::STRING =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $xfer += $input->readString($item['value']);
-                },
-            TType::STRUCT =>
-                function (&$item, &$xfer) use ($input)
-                {
-                    $class = $item['class'];
-
-                    $item['value'] = new $class();
-
-                    if (method_exists($item['value'], $this->getSpecFunc))
-                    {
-                        $subArgs = call_user_func([$item['value'], $this->getSpecFunc]);
-                        $xfer += $this->structRead($subArgs);
-
-                        foreach ($subArgs as $subArg)
-                        {
-                            if (isset($subArg['value']))
-                            {
-                                $item['value']->{$subArg['var']} = $subArg['value'];
-                            }
-                        }
-                    }
-                    else
-                    {
-                        throw new \InvalidArgumentException('Invalid argument: ' . $class);
-                    }
-
-                }
-        ];
-
-        $callbacks[TType::MAP] = function (&$items, &$xfer) use ($input, $callbacks)
+        if (isset($this->wCallbacks[$type]))
         {
-            $kType = $items['ktype'];
-            $vType = $items['vtype'];
-            $vSize = 0;
-
-            $input->readMapBegin($kType, $vType, $vSize);
-
-            $mapResult = [];
-
-            $keySpec = $items['key'];
-            $valSpec = $items['val'];
-
-            for ($vi = 0; $vi < $vSize; $vi ++)
-            {
-                $callbacks[$kType]($keySpec, $xfer);
-                $callbacks[$vType]($valSpec, $xfer);
-                $mapKey = $keySpec['value'];
-                is_int($mapKey) || $mapKey = (string)$mapKey;
-                $mapResult[$mapKey] = $valSpec['value'];
-            }
-
-            $input->readMapEnd();
-            $xfer += $input->readFieldEnd();
-
-            $items['value'] = $mapResult;
-        };
-
-        $callbacks[TType::LST] = function (&$items, &$xfer) use ($input, $callbacks)
-        {
-            $items['value'] = array();
-            $size = 0;
-            $eType = 0;
-            $xfer += $input->readListBegin($eType, $size);
-
-            for ($i = 0; $i < $size; ++$i)
-            {
-                $item = $items['elem'] + array('value' => null);
-                $callbacks[$items['elem']['type']]($item, $xfer);
-                $items['value'][] = $item['value'];
-            }
-            $xfer += $input->readListEnd();
-        };
-
-        $callbacks[TType::SET] = $callbacks[TType::LST];
-
-        if (isset($callbacks[$type]))
-        {
-            $callbacks[$type]($item, $xfer);
+            $this->wCallbacks[$type]($item, $xfer);
         }
         else
         {
-            $xfer += $input->skip($fType);
+            $xfer += $this->inputBin->skip($fType);
+        }
+    }
+
+    /**
+     * gen RW callbacks
+     */
+    private function genCallbacks()
+    {
+        if (empty($this->rCallbacks))
+        {
+            $this->rCallbacks = [
+                TType::BOOL =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeBool($item['value']);
+                    },
+                TType::BYTE =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeByte($item['value']);
+                    },
+                TType::DOUBLE =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeDouble($item['value']);
+                    },
+                TType::I16 =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeI16($item['value']);
+                    },
+                TType::I32 =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeI32($item['value']);
+                    },
+                TType::I64 =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeI64($item['value']);
+                    },
+                TType::STRING =>
+                    function (&$xfer, $item)
+                    {
+                        $xfer += $this->outputBin->writeString($item['value']);
+                    },
+                TType::STRUCT =>
+                    function (&$xfer, $item)
+                    {
+                        if (is_object($item['value']) && method_exists($item['value'], $this->getSpecFunc))
+                        {
+                            $subArgs = call_user_func([$item['value'], $this->getSpecFunc]);
+                            foreach ($subArgs as &$subArg)
+                            {
+                                $subArg['value'] = $item['value']->{$subArg['var']};
+                            }
+                            $xfer += $this->structWrite($subArgs);
+                        }
+                        else
+                        {
+                            throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                        }
+                    },
+                TType::MAP =>
+                    function (&$xfer, $items)
+                    {
+                        if (!is_array($items['value']))
+                        {
+                            throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                        }
+                        $this->outputBin->writeMapBegin($items['ktype'], $items['vtype'], count($items['value']));
+
+                        foreach ($items['key'] as $ki => $keyType)
+                        {
+                            $valSpec = $items['val'];
+                            $valType = $valSpec[$ki];
+                            foreach ($items['value'] as $key => $val)
+                            {
+                                $this->rCallbacks[$keyType]($xfer, array('value' => $key));
+                                $this->rCallbacks[$valType]($xfer, array_merge($valSpec, array('value' => $val)));
+                            }
+                        }
+                        $this->outputBin->writeMapEnd();
+                        $xfer += $this->outputBin->writeFieldEnd();
+                    },
+                TType::LST =>
+                    function (&$xfer, $items)
+                    {
+                        if (!is_array($items['value']))
+                        {
+                            throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                        }
+                        $this->outputBin->writeListBegin($items['etype'], count($items['value']));
+
+                        $valSpec = $items['elem'];
+                        foreach ($items['value'] as $item)
+                        {
+                            $this->rCallbacks[$valSpec['type']]($xfer, array_merge($valSpec, array('value' => $item)));
+                        }
+                        $this->outputBin->writeListEnd();
+                        $xfer += $this->outputBin->writeFieldEnd();
+                    }
+            ];
+
+            $this->rCallbacks[TType::SET] = $this->rCallbacks[TType::LST];
+        }
+
+        if (empty($this->wCallbacks))
+        {
+            $this->wCallbacks = [
+                TType::BOOL =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readBool($item['value']);
+                    },
+                TType::BYTE =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readByte($item['value']);
+                    },
+                TType::DOUBLE =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readDouble($item['value']);
+                    },
+                TType::I16 =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readI16($item['value']);
+                    },
+                TType::I32 =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readI32($item['value']);
+                    },
+                TType::I64 =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readI64($item['value']);
+                    },
+                TType::STRING =>
+                    function (&$item, &$xfer)
+                    {
+                        $xfer += $this->inputBin->readString($item['value']);
+                    },
+                TType::STRUCT =>
+                    function (&$item, &$xfer)
+                    {
+                        $class = $item['class'];
+
+                        $item['value'] = new $class();
+
+                        if (method_exists($item['value'], $this->getSpecFunc))
+                        {
+                            $subArgs = call_user_func([$item['value'], $this->getSpecFunc]);
+                            $xfer += $this->structRead($subArgs);
+
+                            foreach ($subArgs as $subArg)
+                            {
+                                if (isset($subArg['value']))
+                                {
+                                    $item['value']->{$subArg['var']} = $subArg['value'];
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new \InvalidArgumentException('Invalid argument: ' . $class);
+                        }
+
+                    },
+                TType::MAP =>
+                    function (&$items, &$xfer)
+                    {
+                        $kType = $items['ktype'];
+                        $vType = $items['vtype'];
+                        $vSize = 0;
+
+                        $this->inputBin->readMapBegin($kType, $vType, $vSize);
+
+                        $mapResult = [];
+
+                        $keySpec = $items['key'];
+                        $valSpec = $items['val'];
+
+                        for ($vi = 0; $vi < $vSize; $vi ++)
+                        {
+                            $this->wCallbacks[$kType]($keySpec, $xfer);
+                            $this->wCallbacks[$vType]($valSpec, $xfer);
+                            $mapKey = $keySpec['value'];
+                            is_int($mapKey) || $mapKey = (string)$mapKey;
+                            $mapResult[$mapKey] = $valSpec['value'];
+                        }
+
+                        $this->inputBin->readMapEnd();
+                        $xfer += $this->inputBin->readFieldEnd();
+
+                        $items['value'] = $mapResult;
+                    },
+                TType::LST =>
+                    function (&$items, &$xfer)
+                    {
+                        $items['value'] = array();
+                        $size = 0;
+                        $eType = 0;
+                        $xfer += $this->inputBin->readListBegin($eType, $size);
+
+                        for ($i = 0; $i < $size; ++$i)
+                        {
+                            $item = $items['elem'] + array('value' => null);
+                            $this->wCallbacks[$items['elem']['type']]($item, $xfer);
+                            $items['value'][] = $item['value'];
+                        }
+                        $xfer += $this->inputBin->readListEnd();
+                    }
+            ];
+
+            $this->wCallbacks[TType::SET] = $this->wCallbacks[TType::LST];
         }
     }
 }
