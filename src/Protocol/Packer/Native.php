@@ -9,6 +9,7 @@
 namespace Kdt\Iron\Nova\Protocol\Packer;
 
 use Kdt\Iron\Nova\Foundation\Protocol\TException as BizException;
+use Kdt\Iron\Nova\Service\StructValidator;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;
@@ -57,6 +58,7 @@ class Native extends Abstracts
         }
         else
         {
+            StructValidator::validateOutput($args);
             $this->structWrite($args);
         }
         $this->outputBin->writeMessageEnd();

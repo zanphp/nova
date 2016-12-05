@@ -31,6 +31,7 @@ class PackerFacade {
 
         $args = Packer::getInstance()->decode($binArgs,$inputStruct);
         $args = Convert::argsToArray($args, $inputStruct);
+        StructValidator::validateInput($serviceName, $methodName, $args, $inputStruct);
 
         return $args;
     }
