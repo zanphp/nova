@@ -11,10 +11,12 @@ namespace Kdt\Iron\Nova\Network;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Thrift\Exception\TApplicationException;
 use Thrift\Type\TMessageType;
+use Zan\Framework\Foundation\Application;
 use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Sdk\Trace\Constant;
 use Zan\Framework\Sdk\Trace\Trace;
@@ -216,9 +218,20 @@ handle_exception:
         }
 
 handle_exception:
+        $traceId = '';
         if (null !== $trace) {
             $trace->commit($exception);
+            $traceId = $trace->getRootId();
         }
+
+        yield Log::make('zan_framework')->error($exception->getMessage(), [
+            'exception' => $exception,
+            'app' => Application::getInstance()->getName(),
+            'language'=>'php',
+            'side'=>'client',//server,client两个选项
+            'traceId'=> $traceId,
+            'method'=>$this->_serviceName.'.'.$method,
+        ]);
         throw $exception;
     }
 
