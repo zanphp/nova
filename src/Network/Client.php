@@ -183,7 +183,8 @@ handle_exception:
             }
             $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         }
-        $_attachmentContent = json_encode($attachment);
+        $rpcCtx = (yield getRpcContext(null, []));
+        $_attachmentContent = json_encode($attachment + $rpcCtx);
         
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
