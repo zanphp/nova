@@ -111,6 +111,8 @@ class Native extends Abstracts
             }
         }
 
+        StructValidator::validateInput($values, $args);
+
         return $values;
     }
 

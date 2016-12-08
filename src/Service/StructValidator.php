@@ -9,37 +9,46 @@ use Thrift\Type\TType;
 
 class StructValidator
 {
+    public static $outputIgnoreValidVar = ["success", "novaNull", "novaEmptyList"];
+
     /**
-     * 验证接收参数required字段
-     * @param string $serviceName
-     * @param string $methodName
+     * client: 验证请求参数required字段
+     * server: 验证接收参数required字段
      * @param array $args
      * @param array $inputStruct
      */
-    public static function validateInput($serviceName, $methodName, array $args, array $inputStruct)
+    public static function validateInput(array $args, array $inputStruct)
     {
         foreach ($inputStruct as $pos => $spec) {
-            $path = "$serviceName::{$methodName} arguments >-> [{$spec['var']}]";
+            $path = "input value [{$spec['var']}]";
 
-            if (isset($args[$pos-1])) {
+            if (isset($args[$spec["var"]])) {
+                static::validateHelper($args[$spec["var"]], $spec, $path);
+            } /*else if (isset($args[$pos-1])) {
                 static::validateHelper($args[$pos-1], $spec, $path);
-            } else {
+            } */else {
                 if (isset($subSpec["required"])) {
-                    static::validateFail($path);
+                    static::validateFail("$path is null");
                 }
             }
         }
     }
 
     /**
-     * 验证返回值required字段
-     * @param array $retStruct
+     * client: 验证请求参数required字段
+     * server: 验证接受参数required字段
+     * @param array $outputStruct
      */
-    public static function validateOutput(array $retStruct)
+    public static function validateOutput(array $outputStruct)
     {
-        foreach ($retStruct as $pos => $spec) {
+        foreach ($outputStruct as $pos => $spec) {
             if ($spec["value"] !== null) {
-                static::validateHelper($spec["value"], $spec, "return_value >-> {$spec["var"]}");
+                static::validateHelper($spec["value"], $spec, "output -> {$spec["var"]}");
+            } else {
+                if (in_array($spec["var"], static::$outputIgnoreValidVar, true)) {
+                    continue;
+                }
+                static::validateFail("output value is null: " . json_encode($spec, JSON_PRETTY_PRINT));
             }
         }
     }
@@ -65,7 +74,7 @@ class StructValidator
                         continue;
                     } else {
                         if (isset($subSpec["required"])) {
-                            static::validateFail("$path.{$subSpec["var"]}");
+                            static::validateFail("$path.{$subSpec["var"]} is null");
                         }
                     }
                 }
@@ -92,13 +101,13 @@ class StructValidator
 
             default:
                 if (isset($spec["required"]) && $argVal === null) {
-                    static::validateFail($path);
+                    static::validateFail("$path is null");
                 }
         }
     }
 
-    private static function validateFail($path)
+    private static function validateFail($desc)
     {
-        throw new TApplicationException("Validate fail, required: \"$path\" )", 500); // TODO code
+        throw new TApplicationException("nova validate fail, $desc", 500); // TODO code
     }
 }
