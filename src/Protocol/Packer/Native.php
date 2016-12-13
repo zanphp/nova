@@ -50,8 +50,6 @@ class Native extends Abstracts
      */
     protected function processEncode($type, $name, $args)
     {
-        // flush outputBin & clear outputBuffer
-        $this->outputTrans->flush();
         $this->clearOutputBuffer();
 
         $this->outputBin->writeMessageBegin($name, $type, $this->seqID);
@@ -74,7 +72,7 @@ class Native extends Abstracts
      * @return array
      * @throws SysException
      */
-    public function processDecode($data, $args)
+    protected function processDecode($data, $args)
     {
         $this->clearInputBuffer();
         $this->inputBuffer->write($data);

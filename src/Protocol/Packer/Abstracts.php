@@ -88,9 +88,8 @@ abstract class Abstracts
      */
     final protected function clearInputBuffer()
     {
-        if ($this->inputBuffer->available()) {
-            $this->inputBuffer->read($this->maxPacketSize);
-        }
+        $this->inputTrans->flush();
+        $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
     }
 
     /**
@@ -98,9 +97,8 @@ abstract class Abstracts
      */
     final protected function clearOutputBuffer()
     {
-        if ($this->outputBuffer->available()) {
-            $this->outputBuffer->read($this->maxPacketSize);
-        }
+        $this->outputTrans->flush();
+        $this->outputBuffer->available() && $this->outputBuffer->read($this->maxPacketSize);
     }
 
     /**
