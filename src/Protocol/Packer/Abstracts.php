@@ -84,6 +84,24 @@ abstract class Abstracts
     }
 
     /**
+     * clear input before DECODE
+     */
+    final protected function clearInputBuffer()
+    {
+        $this->inputTrans->flush();
+        $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
+    }
+
+    /**
+     * clear output before ENCODE
+     */
+    final protected function clearOutputBuffer()
+    {
+        $this->outputTrans->flush();
+        $this->outputBuffer->available() && $this->outputBuffer->read($this->maxPacketSize);
+    }
+
+    /**
      * @param $type
      * @param $name
      * @param $args
