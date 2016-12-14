@@ -15,6 +15,7 @@ use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Network\Tcp\RpcContext;
 use Zan\Framework\Sdk\Trace\Constant;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
@@ -78,7 +79,11 @@ class Client implements Async
                 throw new NetworkException('nova.client.recv.failed ~[context null]');
             }
             unset(self::$_reqMap[$seqNo]);
-            $trace = $context->getTask()->getContext()->get('trace');
+
+            /* @var $ctx \Zan\Framework\Utilities\DesignPattern\Context */
+            $ctx = $context->getTask()->getContext();
+            RpcContext::unpack($attachData)->bindTaskCtx($ctx);
+            $trace = $ctx->get('trace');
             $cb = $context->getCb();
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
                 return $this->pong($cb);
