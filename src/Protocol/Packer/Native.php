@@ -51,6 +51,8 @@ class Native extends Abstracts
      */
     protected function processEncode($type, $name, $args)
     {
+        $this->clearOutputBuffer();
+
         $this->outputBin->writeMessageBegin($name, $type, $this->seqID);
         if (is_object($args) && $args instanceof TApplicationException)
         {
@@ -72,8 +74,9 @@ class Native extends Abstracts
      * @return array
      * @throws SysException
      */
-    public function processDecode($data, $args)
+    protected function processDecode($data, $args)
     {
+        $this->clearInputBuffer();
         $this->inputBuffer->write($data);
 
         $rSeqID = 0;
@@ -93,9 +96,6 @@ class Native extends Abstracts
         $this->structRead($args);
 
         $this->inputBin->readMessageEnd();
-
-        // clear buffer (important!!)
-        $this->inputBuffer->available() && $this->inputBuffer->read($this->maxPacketSize);
 
         $values = [];
 
