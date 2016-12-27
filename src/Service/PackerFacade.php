@@ -16,6 +16,7 @@ use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
 use Kdt\Iron\Nova\NullResult\NovaNullResult;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Thrift\Exception\TApplicationException;
+use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;
 
 class PackerFacade {
@@ -119,6 +120,11 @@ class PackerFacade {
             return $packer->encode(TMessageType::REPLY, $methodName, $package);
         } while(0);
 
+        $hex = $this->encodeProtocolHex($exceptions);
+        if ($hex !== false) {
+            $tApplicationMsg .= " [hex=$hex]";
+        }
+
         //application exception
         $e = new TApplicationException($tApplicationMsg, $tApplicationCode);
         return $packer->encode(TMessageType::EXCEPTION, $tApplicationMethod, $e);
@@ -149,6 +155,27 @@ class PackerFacade {
         
         return in_array(ltrim(get_class($e), '\\'), $bizExceptions)
                     ? true : false;
+    }
+
+    private function encodeProtocolHex($ex)
+    {
+        if ($ex instanceof TProtocolException) {
+
+            $backtrace = $ex->getTrace();
+            foreach ($backtrace as $frame) {
+
+                if (isset($frame["class"]) && $frame["class"] === Packer::class
+                    &&
+                    isset($frame["function"]) && $frame["function"] === "decode"
+                ) {
+                    $addPrefix = function($v) { return "0x$v"; };
+                    $raw = $frame["args"][0];
+                    return implode(" ", array_map($addPrefix, str_split(bin2hex($raw), 2)));
+                }
+            }
+        }
+
+        return false;
     }
 
 }
