@@ -12,8 +12,6 @@ namespace Kdt\Iron\Nova\Service;
 
 use Kdt\Iron\Nova\Exception\NovaException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
-use Kdt\Iron\Nova\NullResult\NovaEmptyListResult;
-use Kdt\Iron\Nova\NullResult\NovaNullResult;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
@@ -57,27 +55,18 @@ class PackerFacade {
     
     protected function parseNullResult($output)
     {
-        $response = [
+        return [
             'output' => $output,
             'exception' => null
         ];
-        
-//        if(null !== $output && [] !== $output){
-//            return $response;
-//        }
-//
-//        $response['output'] = null;
-//        if(null === $output){
-//            $response['exception'] = new NovaNullResult();
-//        }
-//
-//        if([] === $output){
-//            $response['exception'] = new NovaEmptyListResult();
-//        }
-        
-        return $response; 
     }
 
+    /**
+     * @param string $serviceName
+     * @param string $methodName
+     * @param \Exception $exceptions
+     * @return mixed
+     */
     public function encodeServiceException($serviceName, $methodName, $exceptions)
     {
         $packer = Packer::getInstance();
@@ -120,7 +109,7 @@ class PackerFacade {
             return $packer->encode(TMessageType::REPLY, $methodName, $package);
         } while(0);
 
-        $hex = $this->encodeProtocolHex($exceptions);
+        $hex = $this->encodeProtocolHex($exceptions, Packer::class, "decode");
         if ($hex !== false) {
             $tApplicationMsg .= " [hex=$hex]";
         }
@@ -157,16 +146,16 @@ class PackerFacade {
                     ? true : false;
     }
 
-    private function encodeProtocolHex($ex)
+    private function encodeProtocolHex($ex, $class, $method)
     {
         if ($ex instanceof TProtocolException) {
 
             $backtrace = $ex->getTrace();
             foreach ($backtrace as $frame) {
 
-                if (isset($frame["class"]) && $frame["class"] === Packer::class
+                if (isset($frame["class"]) && $frame["class"] === $class
                     &&
-                    isset($frame["function"]) && $frame["function"] === "decode"
+                    isset($frame["function"]) && $frame["function"] === $method
                 ) {
                     $addPrefix = function($v) { return "0x$v"; };
                     $raw = $frame["args"][0];
