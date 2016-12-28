@@ -24,11 +24,13 @@ class Native extends Abstracts
     private $getSpecFunc = 'getStructSpec';
 
     /**
+     * for encode
      * @var array
      */
     private $rCallbacks = [];
 
     /**
+     * for decode
      * @var array
      */
     private $wCallbacks = [];
@@ -290,6 +292,9 @@ class Native extends Abstracts
                         {
                             throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                         }
+
+                        // map filter null values
+                        $items['value'] = array_filter($items['value']);
                         $this->outputBin->writeMapBegin($items['ktype'], $items['vtype'], count($items['value']));
 
                         foreach ($items['key'] as $ki => $keyType)
@@ -312,6 +317,9 @@ class Native extends Abstracts
                         {
                             throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                         }
+
+                        // list/set filter null values
+                        $items['value'] = array_filter($items['value']);
                         $this->outputBin->writeListBegin($items['etype'], count($items['value']));
 
                         $valSpec = $items['elem'];

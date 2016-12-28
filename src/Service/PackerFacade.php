@@ -119,9 +119,9 @@ class PackerFacade {
             return $packer->encode(TMessageType::REPLY, $methodName, $package, $side);
         } while(0);
 
-        $hex = $this->encodeProtocolHex($exceptions, Packer::class, "decode");
+        $hex = $this->encodeProtocolHex($exceptions);
         if ($hex !== false) {
-            $tApplicationMsg .= " [hex=$hex]";
+            $tApplicationMsg .= $hex;
         }
 
         //application exception
@@ -156,21 +156,33 @@ class PackerFacade {
                     ? true : false;
     }
 
-    private function encodeProtocolHex($ex, $class, $method)
+    private function encodeProtocolHex($ex)
     {
+        $addPrefix = function($v) { return "0x$v"; };
+
         if ($ex instanceof TProtocolException) {
 
             $backtrace = $ex->getTrace();
             foreach ($backtrace as $frame) {
 
-                if (isset($frame["class"]) && $frame["class"] === $class
+                if (isset($frame["class"]) && $frame["class"] === Packer::class
                     &&
-                    isset($frame["function"]) && $frame["function"] === $method
+                    isset($frame["function"]) && $frame["function"] === "encode"
                 ) {
-                    $addPrefix = function($v) { return "0x$v"; };
-                    $raw = $frame["args"][0];
-                    return implode(" ", array_map($addPrefix, str_split(bin2hex($raw), 2)));
+                    $raw = serialize($frame["args"]);
+                    $hex = implode(" ", array_map($addPrefix, str_split(bin2hex($raw), 2)));
+                    return " [type=encode, raw=$hex]";
                 }
+
+                if (isset($frame["class"]) && $frame["class"] === Packer::class
+                    &&
+                    isset($frame["function"]) && $frame["function"] === "decode"
+                ) {
+                    $raw = $frame["args"][0];
+                    $hex = implode(" ", array_map($addPrefix, str_split(bin2hex($raw), 2)));
+                    return " [type=decode, raw=$hex]";
+                }
+
             }
         }
 
