@@ -18,6 +18,7 @@ use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
+use Zan\Framework\Network\Tcp\RpcContext;
 use Zan\Framework\Sdk\Trace\Constant;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
@@ -81,7 +82,11 @@ class Client implements Async
                 throw new NetworkException('nova.client.recv.failed ~[context null]');
             }
             unset(self::$_reqMap[$seqNo]);
-            $trace = $context->getTask()->getContext()->get('trace');
+
+            /* @var $ctx \Zan\Framework\Utilities\DesignPattern\Context */
+            $ctx = $context->getTask()->getContext();
+            RpcContext::unpack($attachData)->bindTaskCtx($ctx);
+            $trace = $ctx->get('trace');
             $cb = $context->getCb();
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
                 return $this->pong($cb);
@@ -197,8 +202,9 @@ handle_exception:
             }
             $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         }
-        $_attachmentContent = json_encode($attachment);
-
+        $rpcCtx = (yield getRpcContext(null, []));
+        $_attachmentContent = json_encode($attachment + $rpcCtx);
+        
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
             $sent = $this->_sock->send($sendBuffer);
