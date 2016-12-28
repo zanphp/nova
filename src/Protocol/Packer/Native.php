@@ -47,9 +47,10 @@ class Native extends Abstracts
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
      */
-    protected function processEncode($type, $name, $args)
+    protected function processEncode($type, $name, $args, $side)
     {
         $this->clearOutputBuffer();
 
@@ -60,7 +61,7 @@ class Native extends Abstracts
         }
         else
         {
-            StructValidator::validateOutput($args);
+            StructValidator::validateOutput($args, $side);
             $this->structWrite($args);
         }
         $this->outputBin->writeMessageEnd();
@@ -71,10 +72,11 @@ class Native extends Abstracts
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
+     * @throws TApplicationException
      */
-    protected function processDecode($data, $args)
+    protected function processDecode($data, $args, $side)
     {
         $this->clearInputBuffer();
         $this->inputBuffer->write($data);
@@ -111,7 +113,7 @@ class Native extends Abstracts
             }
         }
 
-        StructValidator::validateInput($values, $args);
+        StructValidator::validateInput($values, $args, $side);
 
         return $values;
     }

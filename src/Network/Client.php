@@ -166,7 +166,7 @@ handle_exception:
         self::$_reqMap[$_reqSeqNo] = $context;
         $this->_currentContext = $context;
         
-        $thriftBin = $_packer->encode(TMessageType::CALL, $method, $inputArguments);
+        $thriftBin = $_packer->encode(TMessageType::CALL, $method, $inputArguments, Packer::CLIENT);
         $sockInfo = $this->_sock->getsockname();
         $localIp = ip2long($sockInfo['host']);
         $localPort = $sockInfo['port'];
