@@ -9,11 +9,13 @@
 namespace Kdt\Iron\Nova\Service;
 
 
+
 use Kdt\Iron\Nova\Exception\NovaException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Foundation\TSpecification;
 use Kdt\Iron\Nova\Protocol\Packer;
 use Thrift\Exception\TApplicationException;
+use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;
 
 class PackerFacade {
@@ -59,14 +61,18 @@ class PackerFacade {
     
     protected function parseNullResult($output)
     {
-        $response = [
+        return [
             'output' => $output,
             'exception' => null
         ];
-
-        return $response; 
     }
 
+    /**
+     * @param string $serviceName
+     * @param string $methodName
+     * @param \Exception $exceptions
+     * @return mixed
+     */
     public function encodeServiceException($serviceName, $methodName, $exceptions, $side)
     {
         /* @var $exceptions \Exception */
@@ -113,6 +119,11 @@ class PackerFacade {
             return $packer->encode(TMessageType::REPLY, $methodName, $package, $side);
         } while(0);
 
+        $hex = $this->encodeProtocolHex($exceptions, Packer::class, "decode");
+        if ($hex !== false) {
+            $tApplicationMsg .= " [hex=$hex]";
+        }
+
         //application exception
         $e = new TApplicationException($tApplicationMsg, $tApplicationCode);
         return $packer->encode(TMessageType::EXCEPTION, $tApplicationMethod, $e, $side);
@@ -143,6 +154,27 @@ class PackerFacade {
         
         return in_array(ltrim(get_class($e), '\\'), $bizExceptions)
                     ? true : false;
+    }
+
+    private function encodeProtocolHex($ex, $class, $method)
+    {
+        if ($ex instanceof TProtocolException) {
+
+            $backtrace = $ex->getTrace();
+            foreach ($backtrace as $frame) {
+
+                if (isset($frame["class"]) && $frame["class"] === $class
+                    &&
+                    isset($frame["function"]) && $frame["function"] === $method
+                ) {
+                    $addPrefix = function($v) { return "0x$v"; };
+                    $raw = $frame["args"][0];
+                    return implode(" ", array_map($addPrefix, str_split(bin2hex($raw), 2)));
+                }
+            }
+        }
+
+        return false;
     }
 
 }
