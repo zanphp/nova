@@ -21,7 +21,7 @@ class Convert {
      * @throws ProtocolException
      *
      * 业务方thrift 协议方法做参数兼容升级, 方法实现必须配置默认值
-     * v1 func(arg1, arg2) 升级 v1 func(arg1, arg2, arg3)
+     * v1 func(arg1, arg2) 升级 v2 func(arg1, arg2, arg3)
      * func服务的实现方法: func(arg1, arg2, arg3 = default_value)
      */
     public static function argsToArray($data, $struct)
@@ -35,7 +35,7 @@ class Convert {
                 $maybeDefault = false;
             } else {
                 if (!$maybeDefault) {
-                    throw new ProtocolException("nova argument error");
+                    throw new ProtocolException("Missing Nova argument or argument is null");
                 }
             }
         }

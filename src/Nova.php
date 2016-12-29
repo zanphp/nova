@@ -7,12 +7,17 @@
  */
 namespace Kdt\Iron\Nova;
 
+use Kdt\Iron\Nova\Protocol\Packer;
 use Kdt\Iron\Nova\Service\Initator;
 use Kdt\Iron\Nova\Service\Registry;
 use Kdt\Iron\Nova\Service\NovaConfig;
 use Kdt\Iron\Nova\Service\PackerFacade;
 
 class Nova {
+
+    const CLIENT = Packer::CLIENT;
+    const SERVER = Packer::SERVER;
+
     public static function init($config)
     {
         Initator::newInstance()->init($config);
@@ -28,19 +33,25 @@ class Nova {
         return NovaConfig::getInstance()->removeNovaNamespace($serviceName);
     }
 
-    public static function decodeServiceArgs($serviceName, $methodName, $binArgs)
+    public static function decodeServiceArgs($serviceName, $methodName, $binArgs, $side = self::SERVER)
     {
-        return PackerFacade::getInstance()->decodeServiceArgs($serviceName, $methodName, $binArgs);
+        /* @var $packer PackerFacade */
+        $packer = PackerFacade::getInstance();
+        return $packer->decodeServiceArgs($serviceName, $methodName, $binArgs, $side);
     }
 
-    public static function encodeServiceOutput($serviceName, $methodName, $output)
+    public static function encodeServiceOutput($serviceName, $methodName, $output, $side = self::SERVER)
     {
-        return PackerFacade::getInstance()->encodeServiceOutput($serviceName, $methodName, $output);
+        /* @var $packer PackerFacade */
+        $packer = PackerFacade::getInstance();
+        return $packer->encodeServiceOutput($serviceName, $methodName, $output, $side);
     }
 
-    public static function encodeServiceException($serviceName, $methodName, $exception)
+    public static function encodeServiceException($serviceName, $methodName, $exception, $side = self::SERVER)
     {
-        return PackerFacade::getInstance()->encodeServiceException($serviceName, $methodName, $exception);
+        /* @var $packer PackerFacade */
+        $packer = PackerFacade::getInstance();
+        return $packer->encodeServiceException($serviceName, $methodName, $exception, $side);
     }
 
 }

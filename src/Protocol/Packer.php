@@ -15,6 +15,9 @@ use Exception as SysException;
 
 class Packer
 {
+    const CLIENT = 1;
+    const SERVER = 2;
+
     /*
      * Instance mgr
      */
@@ -81,21 +84,22 @@ class Packer
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
      */
-    public function encode($type, $name, $args)
+    public function encode($type, $name, $args, $side)
     {
-        return $this->packer->encode($type, $name, $args);
+        return $this->packer->encode($type, $name, $args, $side);
     }
 
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
      */
-    public function decode($data, $args)
+    public function decode($data, $args, $side)
     {
-        return $this->packer->decode($data, $args);
+        return $this->packer->decode($data, $args, $side);
     }
 }

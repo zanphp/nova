@@ -9,6 +9,7 @@
 namespace Kdt\Iron\Nova\Protocol\Packer;
 
 use Kdt\Iron\Nova\Foundation\Protocol\TException as BizException;
+use Kdt\Iron\Nova\Service\StructValidator;
 use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;
@@ -23,11 +24,13 @@ class Native extends Abstracts
     private $getSpecFunc = 'getStructSpec';
 
     /**
+     * for encode
      * @var array
      */
     private $rCallbacks = [];
 
     /**
+     * for decode
      * @var array
      */
     private $wCallbacks = [];
@@ -46,9 +49,10 @@ class Native extends Abstracts
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
      */
-    protected function processEncode($type, $name, $args)
+    protected function processEncode($type, $name, $args, $side)
     {
         $this->clearOutputBuffer();
 
@@ -59,6 +63,7 @@ class Native extends Abstracts
         }
         else
         {
+            StructValidator::validateOutput($args, $side);
             $this->structWrite($args);
         }
         $this->outputBin->writeMessageEnd();
@@ -69,10 +74,11 @@ class Native extends Abstracts
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
+     * @throws TApplicationException
      */
-    protected function processDecode($data, $args)
+    protected function processDecode($data, $args, $side)
     {
         $this->clearInputBuffer();
         $this->inputBuffer->write($data);
@@ -108,6 +114,8 @@ class Native extends Abstracts
                 $values[$arg['var']] = $arg['value'];
             }
         }
+
+        StructValidator::validateInput($values, $args, $side);
 
         return $values;
     }
@@ -284,6 +292,12 @@ class Native extends Abstracts
                         {
                             throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                         }
+
+                        // map filter null values
+                        $items['value'] = array_filter($items['value'], function($v) {
+                            return $v !== null;
+                        });
+
                         $this->outputBin->writeMapBegin($items['ktype'], $items['vtype'], count($items['value']));
 
                         foreach ($items['key'] as $ki => $keyType)
@@ -306,6 +320,12 @@ class Native extends Abstracts
                         {
                             throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                         }
+
+                        // list/set filter null values
+                        $items['value'] = array_filter($items['value'], function($v) {
+                            return $v !== null;
+                        });
+
                         $this->outputBin->writeListBegin($items['etype'], count($items['value']));
 
                         $valSpec = $items['elem'];

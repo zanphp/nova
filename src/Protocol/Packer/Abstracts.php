@@ -105,14 +105,15 @@ abstract class Abstracts
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
-     * @throws SysException
+     * @throws TProtocolException
      */
-    final public function encode($type, $name, $args)
+    final public function encode($type, $name, $args, $side)
     {
         if ($type == TMessageType::CALL || $type == TMessageType::REPLY)
         {
-            return $this->processEncode($type, $name, $args);
+            return $this->processEncode($type, $name, $args, $side);
         }
         else
         {
@@ -121,7 +122,7 @@ abstract class Abstracts
                 $exception = ExceptionPacket::instance()->ironInject($args);
                 if ($exception instanceof TApplicationException)
                 {
-                    return $this->processEncode($type, $name, $exception);
+                    return $this->processEncode($type, $name, $exception, $side);
                 }
                 else
                 {
@@ -138,27 +139,28 @@ abstract class Abstracts
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
      */
-    final public function decode($data, $args)
+    final public function decode($data, $args, $side)
     {
-        return $this->processDecode($data, $args);
+        return $this->processDecode($data, $args, $side);
     }
 
     /**
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
      */
-    abstract protected function processEncode($type, $name, $args);
+    abstract protected function processEncode($type, $name, $args, $side);
 
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
      */
-    abstract protected function processDecode($data, $args);
+    abstract protected function processDecode($data, $args, $side);
 }

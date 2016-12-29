@@ -30,9 +30,10 @@ class Extension extends Abstracts
      * @param $type
      * @param $name
      * @param $args
+     * @param $side
      * @return string
      */
-    protected function processEncode($type, $name, $args)
+    protected function processEncode($type, $name, $args, $side)
     {
         $input = $this->container->inputObject($args);
 
@@ -44,10 +45,10 @@ class Extension extends Abstracts
     /**
      * @param $data
      * @param $args
+     * @param $side
      * @return array
-     * @throws SysException
      */
-    public function processDecode($data, $args)
+    public function processDecode($data, $args, $side)
     {
         $this->inputBuffer->write($data);
 
