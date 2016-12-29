@@ -88,6 +88,7 @@ class Client implements Async
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
                 return $this->pong($cb);
             }
+            /* @var $packer Packer */
             $packer = $context->getPacker();
 
             if ($serviceName == $context->getReqServiceName()
@@ -96,7 +97,8 @@ class Client implements Async
                 try {
                     $response = $packer->decode(
                         $thriftBIN,
-                        $packer->struct($context->getOutputStruct(), $context->getExceptionStruct())
+                        $packer->struct($context->getOutputStruct(), $context->getExceptionStruct()),
+                        Packer::CLIENT
                     );
                 } catch (\Exception $e) {
                     if (null !== $trace) {
