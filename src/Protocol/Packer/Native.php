@@ -294,7 +294,10 @@ class Native extends Abstracts
                         }
 
                         // map filter null values
-                        $items['value'] = array_filter($items['value']);
+                        $items['value'] = array_filter($items['value'], function($v) {
+                            return $v !== null;
+                        });
+
                         $this->outputBin->writeMapBegin($items['ktype'], $items['vtype'], count($items['value']));
 
                         foreach ($items['key'] as $ki => $keyType)
@@ -319,7 +322,10 @@ class Native extends Abstracts
                         }
 
                         // list/set filter null values
-                        $items['value'] = array_filter($items['value']);
+                        $items['value'] = array_filter($items['value'], function($v) {
+                            return $v !== null;
+                        });
+
                         $this->outputBin->writeListBegin($items['etype'], count($items['value']));
 
                         $valSpec = $items['elem'];

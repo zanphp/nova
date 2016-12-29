@@ -96,8 +96,8 @@ class StructValidator
 
                 /* @var StructSpecManager $argVal */
                 foreach ($argVal->getStructSpec() as $subPos => $subSpec) {
-                    if (isset($argVal->$subSpec["var"])) {
-                        static::validateHelper($argVal->$subSpec["var"], $subSpec, "$path.{$subSpec["var"]}", $side, $type);
+                    if (isset($argVal->{$subSpec["var"]})) {
+                        static::validateHelper($argVal->{$subSpec["var"]}, $subSpec, "$path.{$subSpec["var"]}", $side, $type);
                         continue;
                     } else {
                         if (isset($subSpec["required"])) {
