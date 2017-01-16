@@ -20,6 +20,7 @@ class ClientContext
     private $_packer;
     private $_cb;
     private $_task;
+    private $_startTime;//us
 
     /**
      * @return mixed
@@ -163,6 +164,21 @@ class ClientContext
     public function setExceptionStruct($exceptionStruct)
     {
         $this->_exceptionStruct = $exceptionStruct;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getStartTime()
+    {
+        return $this->_startTime;
+    }
+
+    /**
+     */
+    public function setStartTime()
+    {
+        $this->_startTime = microtime(true);
     }
 
 
