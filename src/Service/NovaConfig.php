@@ -9,57 +9,82 @@
 namespace Kdt\Iron\Nova\Service;
 
 
+use Kdt\Iron\Nova\Exception\FrameworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Zan\Framework\Foundation\Core\Path;
 
-class NovaConfig {
+class NovaConfig
+{
     use InstanceManager;
 
-    private $map = [];
-    private $namespace = null;
-    private $path = null;
+    private static $genericInvokePath = "vendor/nova-service/generic/sdk/gen-php";
 
-    public function getNamespace()
+    private static $genericInvokeBaseNamespace = "Com\\Youzan\\Nova\\";
+
+    private static $required = ["protocol", "domain", "appName", "path", "namespace"];
+
+    private $config = [];
+
+    public function setConfig(array $config)
     {
-        return $this->namespace;
+        self::validatorConfig($config);
+
+        $etcdKeys = []; // 按注册分组
+
+        foreach ($config as &$item) {
+            $app = $item["appName"];
+            $domain = $item["domain"];
+            $proto = $item["protocol"];
+
+            $etcdKey = Registry::buildEtcdKey($proto, $domain, $app);
+            $etcdKeys[$etcdKey] = [$proto, $domain, $app];
+
+            $item["path"] = realpath($item["path"]) . '/';
+        }
+        unset($item);
+
+        // nova 协议 添加 泛化学调用
+        foreach ($etcdKeys as list($proto, $domain, $app)) {
+            if ($proto === Registry::PROTO_NOVA) {
+                $config[] = [
+                    "appName" => $app,
+                    "domain" => $domain,
+                    "path"  => Path::getRootPath() . self::$genericInvokePath . "/",
+                    "namespace" => self::$genericInvokeBaseNamespace
+                ];
+            }
+        }
+
+        $this->config = $config;
     }
 
-    public function removeNovaNamespace($serviceName)
+    public function getConfig()
     {
+        return $this->config;
+    }
+
+    private static function validatorConfig(array $config)
+    {
+        foreach ($config as $item) {
+            foreach (self::$required as $filed) {
+                if (!isset($item[$filed])) {
+                    throw new FrameworkException("nova $filed not defined");
+                }
+            }
+        }
+    }
+
+    // TODO
+    public function removeNovaNamespace($proto, $domain, $appName, $serviceName)
+    {
+        foreach ($this->config as $item) {
+            // TODO
+            $item["namespace"];
+
+        }
+
         $novaNSLen = strlen($this->namespace);
 
         return substr($serviceName, $novaNSLen);
     }
-
-    public function setNamespace($namespace)
-    {
-        $this->namespace = $namespace;
-
-        return $this;
-    }
-
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    public function setPath($path)
-    {
-        $this->path = realpath($path) . '/';
-
-        return $this;
-    }
-
-    public function set($key, $object)
-    {
-        $this->map[$key] = $object;
-    }
-
-    public function get($key, $default=null)
-    {
-        if(!isset($this->map[$key])){
-            return $default;
-        }
-        return $this->map[$key];
-    }
-
 }

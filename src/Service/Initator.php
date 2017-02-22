@@ -9,24 +9,16 @@
 namespace Kdt\Iron\Nova\Service;
 
 
+use Kdt\Iron\Nova\Exception\FrameworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 
-class Initator {
+class Initator
+{
     use InstanceManager;
 
-
-    public function __construct()
+    public function init(array $configs)
     {
-    }
-
-    public function init($config)
-    {
-        ConfigValidator::getInstance()->validate($config);
-
-        NovaConfig::getInstance()
-            ->setPath($config['path'])
-            ->setNamespace($config['namespace']);
-
+        NovaConfig::getInstance()->setConfig($configs);
         Scanner::getInstance()->scan();
     }
 }
