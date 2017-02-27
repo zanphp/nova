@@ -11,6 +11,7 @@ namespace Kdt\Iron\Nova\Foundation;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Network\Client;
+use Kdt\Iron\Nova\Service\Registry;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Network\Connection\NovaClientConnectionManager;
 
@@ -75,8 +76,9 @@ abstract class TService
      */
     final protected function apiCall($method, $arguments)
     {
+        $domain = ""; // nova协议header中domain已经移除 !!!
         $serviceName = $this->getNovaServiceName();
-        $connection = (yield NovaClientConnectionManager::getInstance()->get($serviceName, $method));
+        $connection = (yield NovaClientConnectionManager::getInstance()->get(Registry::PROTO_NOVA, $domain, $serviceName, $method));
         if (!($connection instanceof Connection)) {
             throw new NetworkException('get nova connection error');
         }
