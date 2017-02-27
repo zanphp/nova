@@ -25,32 +25,36 @@ class NovaConfig
 
     private $config = [];
 
+    private $etcdNamespaces = [];
+
     public function setConfig(array $config)
     {
         self::validatorConfig($config);
 
         $etcdKeys = []; // 按注册分组
-
         foreach ($config as &$item) {
             $app = $item["appName"];
             $domain = $item["domain"];
             $proto = $item["protocol"];
+            $namespace = $item["namespace"];
 
             $etcdKey = Registry::buildEtcdKey($proto, $domain, $app);
             $etcdKeys[$etcdKey] = [$proto, $domain, $app];
-
             $item["path"] = realpath($item["path"]) . '/';
+
+            $this->etcdNamespaces["$proto:$app"] = $namespace;
         }
         unset($item);
 
-        // nova 协议 添加 泛化学调用
+        // 按注册分组添加 泛化调用服务
         foreach ($etcdKeys as list($proto, $domain, $app)) {
             if ($proto === Registry::PROTO_NOVA) {
                 $config[] = [
                     "appName" => $app,
                     "domain" => $domain,
                     "path"  => Path::getRootPath() . self::$genericInvokePath . "/",
-                    "namespace" => self::$genericInvokeBaseNamespace
+                    "namespace" => self::$genericInvokeBaseNamespace,
+                    "protocol" => Registry::PROTO_NOVA,
                 ];
             }
         }
@@ -74,17 +78,15 @@ class NovaConfig
         }
     }
 
-    // TODO
     public function removeNovaNamespace($proto, $domain, $appName, $serviceName)
     {
-        foreach ($this->config as $item) {
-            // TODO
-            $item["namespace"];
-
+        // nova协议header中移除domain, 除非使用attachment传递,
+        // 否则不知道客户端请求哪个domain的服务
+        $etcdKey = "$proto:$appName";
+        if (isset($this->etcdNamespaces[$etcdKey])) {
+            return substr($serviceName, strlen($this->etcdNamespaces[$etcdKey]));
+        } else {
+            throw new FrameworkException("can not find config: proto=$proto, domain=$domain, appName=$appName, service=$serviceName");
         }
-
-        $novaNSLen = strlen($this->namespace);
-
-        return substr($serviceName, $novaNSLen);
     }
 }

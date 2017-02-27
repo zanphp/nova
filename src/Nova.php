@@ -38,12 +38,11 @@ class Nova
         return $registry->getAll($protocol, $domain, $appName);
     }
 
-    public static function removeNovaNamespace($serviceName, $appName = null)
+    public static function removeNovaNamespace($serviceName, $appName)
     {
-        // TODO by $appName HELLO
         /* @var $novaConfig NovaConfig */
         $novaConfig = NovaConfig::getInstance();
-        return $novaConfig->removeNovaNamespace($serviceName);
+        return $novaConfig->removeNovaNamespace("nova", null, $appName, $serviceName);
     }
 
     public static function decodeServiceArgs($serviceName, $methodName, $binArgs, $side = self::SERVER)

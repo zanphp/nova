@@ -10,7 +10,8 @@ namespace Kdt\Iron\Nova\Service;
 
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 
-class ClassMap {
+class ClassMap
+{
     use InstanceManager;
 
     private $sepcMap = [];
