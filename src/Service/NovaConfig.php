@@ -42,7 +42,14 @@ class NovaConfig
             $etcdKeys[$etcdKey] = [$proto, $domain, $app];
             $item["path"] = realpath($item["path"]) . '/';
 
-            $this->etcdNamespaces["$proto:$app"] = $namespace;
+            $nsKey = $this->buildNamespaceKey($proto, $app);
+            if (isset($this->etcdNamespaces[$nsKey])) {
+                $oldNamespace = $this->etcdNamespaces[$nsKey];
+                if ($oldNamespace !== $namespace) {
+                    throw new FrameworkException("the same namespace must be defined in the one same app");
+                }
+            }
+            $this->etcdNamespaces[$nsKey] = $namespace;
         }
         unset($item);
 
@@ -80,13 +87,18 @@ class NovaConfig
 
     public function removeNovaNamespace($proto, $domain, $appName, $serviceName)
     {
-        // nova协议header中移除domain, 除非使用attachment传递,
-        // 否则不知道客户端请求哪个domain的服务
-        $etcdKey = "$proto:$appName";
+        $etcdKey = $this->buildNamespaceKey($proto, $appName);
         if (isset($this->etcdNamespaces[$etcdKey])) {
             return substr($serviceName, strlen($this->etcdNamespaces[$etcdKey]));
         } else {
             throw new FrameworkException("can not find config: proto=$proto, domain=$domain, appName=$appName, service=$serviceName");
         }
+    }
+
+    private function buildNamespaceKey($proto, $app)
+    {
+        // nova协议header中移除domain, 除非使用attachment传递,
+        // 否则不知道客户端请求哪个domain的服务, 这里不使用domain
+        return "$proto:$app";
     }
 }
