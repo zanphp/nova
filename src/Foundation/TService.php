@@ -77,7 +77,7 @@ abstract class TService
     final protected function apiCall($method, $arguments)
     {
         $domain = ""; // nova协议header中domain已经移除 !!!
-        $serviceName = $this->getNovaServiceName();
+        $serviceName = self::getNovaServiceName($this->getRelatedSpec()->getServiceName());
         $connection = (yield NovaClientConnectionManager::getInstance()->get(Registry::PROTO_NOVA, $domain, $serviceName, $method));
         if (!($connection instanceof Connection)) {
             throw new NetworkException('get nova connection error');
@@ -87,10 +87,9 @@ abstract class TService
         yield $client->call($method, $this->getInputStructSpec($method, $arguments), $this->getOutputStructSpec($method), $this->getExceptionStructSpec($method));
     }
     
-    final protected function getNovaServiceName()
+    final public static function getNovaServiceName($specServiceName)
     {
-        $serviceName  = $this->getRelatedSpec()->getServiceName();
-        $nameArr = explode('.', $serviceName);
+        $nameArr = explode('.', $specServiceName);
         $className = array_pop($nameArr);
         $nameArr = array_map('lcfirst', $nameArr);
         $nameArr[] = $className;

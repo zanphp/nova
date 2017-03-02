@@ -12,6 +12,7 @@ use Kdt\Iron\Nova\Service\Initator;
 use Kdt\Iron\Nova\Service\Registry;
 use Kdt\Iron\Nova\Service\NovaConfig;
 use Kdt\Iron\Nova\Service\PackerFacade;
+use Kdt\Iron\Nova\Service\Scanner;
 
 class Nova
 {
@@ -29,6 +30,18 @@ class Nova
         /** @var $registry Registry */
         $registry = Registry::getInstance();
         return $registry->getEtcdKeyList();
+    }
+
+    /**
+     * @param $path
+     * @param $baseNamespace
+     * @return Foundation\TSpecification[]
+     */
+    public static function getSpec($path, $baseNamespace)
+    {
+        /** @var Scanner $scanner */
+        $scanner = Scanner::getInstance();
+        return $scanner->scanSpecObjects($path, $baseNamespace);
     }
 
     public static function getAvailableService($protocol, $domain, $appName)
