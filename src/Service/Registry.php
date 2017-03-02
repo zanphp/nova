@@ -13,31 +13,56 @@ use Kdt\Iron\Nova\Exception\FrameworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 use Kdt\Iron\Nova\Foundation\TSpecification;
 
-class Registry {
+class Registry
+{
     use InstanceManager;
 
+    const PROTO_NOVA = "nova";
+
+    private $etcdKeyList = [];
     private $map = [];
 
-    public function register(TSpecification $class)
+    public static function buildEtcdKey($protocol, $domain, $appName)
     {
-        $serviceName = $class->getServiceName();
-        if(isset($this->map[$serviceName])){
-            throw new FrameworkException('duplicated implement of :' . $serviceName);
-        }
-        $methods = $class->getServiceMethods();
-        $this->map[$serviceName] = $methods;
+        return "$protocol:$domain:$appName";
     }
 
-
-    public function getAll()
+    public function register($protocol, $domain, $appName, TSpecification $class)
     {
+        $etcdKey = self::buildEtcdKey($protocol, $domain, $appName);
+
+        if (!isset($this->map[$etcdKey])) {
+            $this->etcdKeyList[$etcdKey] = [$protocol, $domain, $appName];
+            $this->map[$etcdKey] = [];
+        }
+
+        $serviceName = $class->getServiceName();
+        if(isset($this->map[$etcdKey][$serviceName])){
+            throw new FrameworkException("duplicated implement of :$serviceName in app $appName");
+        }
+        $methods = $class->getServiceMethods();
+        $this->map[$etcdKey][$serviceName] = $methods;
+    }
+
+    public function getEtcdKeyList()
+    {
+        return $this->etcdKeyList;
+    }
+
+    public function getAll($protocol, $domain, $appName)
+    {
+        $etcdKey = self::buildEtcdKey($protocol, $domain, $appName);
+
         if(empty($this->map)) {
             return [];
         }
-        //return $this->map;
+
+        if (!isset($this->map[$etcdKey])) {
+            throw new FrameworkException("etcd key $etcdKey not found");
+        }
 
         $ret = [];
-        foreach($this->map as $serviceName => $methods) {
+        foreach($this->map[$etcdKey] as $serviceName => $methods) {
             $ret[] = [
                 'service' => $this->formatServiceName($serviceName),
                 'methods' => $methods,
@@ -46,7 +71,6 @@ class Registry {
 
         return $ret;
     }
-
 
     private function formatServiceName($serviceName)
     {
@@ -58,7 +82,4 @@ class Registry {
 
         return join('.', $serviceArr);
     }
-
-
-
 }

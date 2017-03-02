@@ -16,26 +16,20 @@ class Scanner
 {
     use InstanceManager;
 
-    private $path = null;
-    public function __construct()
-    {
-    }
-
-
     public function scan()
     {
-
-        $this->scanSpec();
+        $config = NovaConfig::getInstance()->getConfig();
+        foreach ($config as $item) {
+            $this->scanSpec($item["appName"], $item["domain"], $item["path"], $item["namespace"]);
+        }
     }
 
-    private function scanSpec()
+    private function scanSpec($appName, $domain, $path, $baseNamespace)
     {
-        $config = NovaConfig::getInstance();
+        /* @var $classMap ClassMap */
         $classMap = ClassMap::getInstance();
+        /* @var $registry Registry */
         $registry = Registry::getInstance();
-
-        $path = $config->getPath();
-        $baseNamespace = $config->getNamespace();
 
         $pattern = '/servicespecification/';
         $files = Dir::glob($path, $pattern);
@@ -46,7 +40,7 @@ class Scanner
             $class = new $className();
 
             $classMap->setSpec($className,$class);
-            $registry->register($class);
+            $registry->register(Registry::PROTO_NOVA, $domain, $appName, $class);
         }
     }
 
