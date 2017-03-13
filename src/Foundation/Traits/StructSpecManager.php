@@ -13,7 +13,7 @@ trait StructSpecManager
     /**
      * @var array
      */
-    public $_TSPEC = [];
+    //public $_TSPEC = [];
 
     /**
      * @var array
@@ -70,6 +70,6 @@ trait StructSpecManager
      */
     private function staticSpecInjecting()
     {
-        $this->_TSPEC = $this->structSpec;
+        //$this->_TSPEC = $this->structSpec;
     }
 }
