@@ -7,13 +7,13 @@
  */
 
 namespace Kdt\Iron\Nova\Foundation\Traits;
-use Kdt\Iron\Nova\Foundation\Protocol\TStruct;
+
 trait StructSpecManager
 {
     /**
      * @var array
      */
-    public $_TSPEC = [];
+    protected $_TSPEC = [];
 
     /**
      * @var array
