@@ -24,6 +24,10 @@ abstract class TException extends SysException
     public function __construct($message = "", $code = 0, SysException $previous = null)
     {
         $this->staticSpecInjecting();
+        //Apply for default message defined in .thrift file
+        if (!$message and isset($this->message) and $this->message) {
+            $message = $this->message;
+        }
         parent::__construct($message, $code, $previous);
     }
 }
