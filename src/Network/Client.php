@@ -208,7 +208,7 @@ handle_exception:
         $attachment = $attachment + $rpcCtx;
         if ($attachment === [])
             $attachment = new \stdClass();
-        $_attachmentContent = json_encode($attachment + $rpcCtx);
+        $_attachmentContent = json_encode($attachment);
         
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
