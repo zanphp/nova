@@ -16,6 +16,8 @@ use Zan\Framework\Foundation\Contract\Async;
 use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
+use Zan\Framework\Foundation\Core\Config;
+use Zan\Framework\Network\Server\Timer\Timer;
 use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Network\Tcp\RpcContext;
@@ -25,19 +27,26 @@ use Zan\Framework\Sdk\Trace\TraceBuilder;
 
 class Client implements Async
 {
+    const DEFAULT_SEND_TIMEOUT = 3000;
+
     private $_conn;
     private $_sock;
     private $_serviceName;
     private $_currentContext;
     private static $_reqMap = [];
 
-    private static $_instance = null;
+    private static $_instance = null; // memory_leak
+
+    private static $sendTimeout;
 
     final public static function getInstance(Connection $conn, $serviceName)
     {
         $key = spl_object_hash($conn) . '_' . $serviceName;
         if (!isset(static::$_instance[$key]) || null === static::$_instance[$key]) {
             static::$_instance[$key] = new self($conn, $serviceName);
+            if (self::$sendTimeout === null) {
+                self::$sendTimeout = Config::get("connection.nova.send_timeout", static::DEFAULT_SEND_TIMEOUT);
+            }
         }
         return static::$_instance[$key];
     }
@@ -176,8 +185,7 @@ handle_exception:
         $context->setReqSeqNo($_reqSeqNo);
         $context->setPacker($_packer);
         $context->setStartTime();
-        
-        self::$_reqMap[$_reqSeqNo] = $context;
+
         $this->_currentContext = $context;
         
         $thriftBin = $_packer->encode(TMessageType::CALL, $method, $inputArguments, Packer::CLIENT);
@@ -209,7 +217,7 @@ handle_exception:
         if ($attachment === [])
             $attachment = new \stdClass();
         $_attachmentContent = json_encode($attachment);
-        
+
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
             $sent = $this->_sock->send($sendBuffer);
@@ -219,6 +227,12 @@ handle_exception:
                 $exception = new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
                 goto handle_exception;
             }
+
+            self::$_reqMap[$_reqSeqNo] = $context;
+            Timer::after(self::$sendTimeout, function() use($_reqSeqNo) {
+                unset(self::$_reqMap[$_reqSeqNo]);
+            });
+
             yield $this;
             return;
         } else {
@@ -255,7 +269,6 @@ handle_exception:
         $context->setReqMethodName($method);
         $context->setReqSeqNo($_reqSeqNo);
 
-        self::$_reqMap[$_reqSeqNo] = $context;
         $this->_currentContext = $context;
 
         $sockInfo = $this->_sock->getsockname();
@@ -269,6 +282,12 @@ handle_exception:
             if (false === $sent) {
                 throw new NetworkException(socket_strerror($this->_sock->errCode), $this->_sock->errCode);
             }
+
+            self::$_reqMap[$_reqSeqNo] = $context;
+            Timer::after(self::$sendTimeout, function() use($_reqSeqNo) {
+                unset(self::$_reqMap[$_reqSeqNo]);
+            });
+
             yield $this;
         } else {
             throw new ProtocolException('nova.encoding.failed');
