@@ -88,7 +88,7 @@ class Client implements Async
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
             $context = isset(self::$_reqMap[$seqNo]) ? self::$_reqMap[$seqNo] : null;
             if (!$context) {
-                throw new NetworkException('nova.client.recv.failed ~[context null]');
+                throw new NetworkException("nova call timeout");
             }
             unset(self::$_reqMap[$seqNo]);
 
