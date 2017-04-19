@@ -95,6 +95,7 @@ class Client implements Async
             /* @var $ctx \Zan\Framework\Utilities\DesignPattern\Context */
             $ctx = $context->getTask()->getContext();
             RpcContext::unpack($attachData)->bindTaskCtx($ctx);
+            /** @var Trace $trace */
             $trace = $ctx->get('trace');
             $cb = $context->getCb();
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
@@ -196,6 +197,7 @@ handle_exception:
         $hawk = Hawk::getInstance();
         $serverIp = $localIp . ':' . $localPort;
 
+        /** @var Trace $trace */
         $trace = (yield getContext('trace'));
         $attachment = [];
 
