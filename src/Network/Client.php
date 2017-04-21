@@ -24,6 +24,7 @@ use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Network\Tcp\RpcContext;
 use Zan\Framework\Sdk\Trace\ChromeTrace;
 use Zan\Framework\Sdk\Trace\Constant;
+use Zan\Framework\Sdk\Trace\JSONObject;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
 
@@ -127,7 +128,8 @@ class Client implements Async
                     && $methodName == $context->getReqMethodName()) {
 
                 $key = ChromeTrace::TRANS_KEY;
-                $remote = $rpcCtx->get($key);
+                $raw = $rpcCtx->get($key);
+                $remote = $raw ? JSONObject::unpack($raw) : null;
 
                 try {
                     $response = $packer->decode(
