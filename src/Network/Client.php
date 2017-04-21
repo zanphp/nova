@@ -127,9 +127,7 @@ class Client implements Async
             if ($serviceName == $context->getReqServiceName()
                     && $methodName == $context->getReqMethodName()) {
 
-                $key = ChromeTrace::TRANS_KEY;
-                $raw = $rpcCtx->get($key);
-                $remote = $raw ? JSONObject::unpack($raw) : null;
+                $remote = JSONObject::fromRpcContext($rpcCtx);
 
                 try {
                     $response = $packer->decode(
