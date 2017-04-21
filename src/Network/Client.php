@@ -17,11 +17,14 @@ use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Foundation\Core\Config;
+use Zan\Framework\Foundation\Core\Debug;
 use Zan\Framework\Network\Server\Timer\Timer;
 use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Network\Tcp\RpcContext;
+use Zan\Framework\Sdk\Trace\ChromeTrace;
 use Zan\Framework\Sdk\Trace\Constant;
+use Zan\Framework\Sdk\Trace\JSONObject;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
 
@@ -38,6 +41,8 @@ class Client implements Async
     private static $_instance = null; // memory_leak
 
     private static $sendTimeout;
+
+    private static $seqTimerId = [];
 
     final public static function getInstance(Connection $conn, $serviceName)
     {
@@ -84,8 +89,17 @@ class Client implements Async
             goto handle_exception;
         }
 
+        $trace = null;
+        $chromeTrace = null;
+
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
+            if (isset(self::$seqTimerId[$seqNo])) {
+                Timer::clearAfterJob(self::$seqTimerId[$seqNo]);
+                unset(self::$seqTimerId[$seqNo]);
+            }
+
+            /** @var ClientContext $context */
             $context = isset(self::$_reqMap[$seqNo]) ? self::$_reqMap[$seqNo] : null;
             if (!$context) {
                 throw new NetworkException("nova call timeout");
@@ -94,9 +108,13 @@ class Client implements Async
 
             /* @var $ctx \Zan\Framework\Utilities\DesignPattern\Context */
             $ctx = $context->getTask()->getContext();
-            RpcContext::unpack($attachData)->bindTaskCtx($ctx);
+            $rpcCtx = RpcContext::unpack($attachData);
+            $rpcCtx->bindTaskCtx($ctx);
+
             /** @var Trace $trace */
             $trace = $ctx->get('trace');
+            $chromeTrace = $ctx->get('chrome_trace');
+
             $cb = $context->getCb();
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
                 return $this->pong($cb);
@@ -108,6 +126,9 @@ class Client implements Async
 
             if ($serviceName == $context->getReqServiceName()
                     && $methodName == $context->getReqMethodName()) {
+
+                $key = ChromeTrace::TRANS_KEY;
+                $remote = $rpcCtx->get($key);
 
                 try {
                     $response = $packer->decode(
@@ -128,6 +149,13 @@ class Client implements Async
                             $trace->commit(Constant::SUCCESS);
                         }
                     }
+                    if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                        if ($remote) {
+                            $chromeTrace->commit("error", $e, $remote);
+                        } else {
+                            $chromeTrace->commit("error", $e);
+                        }
+                    }
 
                     call_user_func($cb, null, $e);
                     return;
@@ -140,6 +168,13 @@ class Client implements Async
                     : null;
                 if (null !== $trace) {
                     $trace->commit(Constant::SUCCESS);
+                }
+                if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                    if ($remote) {
+                        $chromeTrace->commit("info", $ret, $remote);
+                    } else {
+                        $chromeTrace->commit("info", $ret);
+                    }
                 }
                 call_user_func($cb, $ret);
                 return;
@@ -174,11 +209,9 @@ handle_exception:
     public function call($method, $inputArguments, $outputStruct, $exceptionStruct)
     {
         $_reqSeqNo = nova_get_sequence(); 
-        $_attachmentContent = '{}';
         $_packer = Packer::newInstance();
         
         $context = new ClientContext();
-        $context->setAttachmentContent($_attachmentContent);
         $context->setOutputStruct($outputStruct);
         $context->setExceptionStruct($exceptionStruct);
         $context->setReqServiceName($this->_serviceName);
@@ -214,11 +247,26 @@ handle_exception:
             }
             $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         }
+
+        $chromeTrace = (yield getContext('chrome_trace'));
+        if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+            $chromeTrace->beginTransaction("nova", [
+                "service" => $this->_serviceName,
+                "method" => $method,
+                "local_ip" => $localIp,
+                "local_port" => $localPort,
+                "seq_no" => $_reqSeqNo,
+                "args" => $inputArguments, // TODO clean
+            ]);
+        }
+
         $rpcCtx = (yield getRpcContext(null, []));
         $attachment = $attachment + $rpcCtx;
         if ($attachment === [])
             $attachment = new \stdClass();
         $_attachmentContent = json_encode($attachment);
+
+        $context->setAttachmentContent($_attachmentContent);
 
         if (nova_encode($this->_serviceName, $method, $localIp, $localPort, $_reqSeqNo, $_attachmentContent, $thriftBin, $sendBuffer)) {
             $this->_conn->setLastUsedTime();
@@ -231,8 +279,12 @@ handle_exception:
             }
 
             self::$_reqMap[$_reqSeqNo] = $context;
-            Timer::after(self::$sendTimeout, function() use($_reqSeqNo) {
+            self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($chromeTrace, $_reqSeqNo) {
+                if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                    $chromeTrace->commit("error", "timeout");
+                }
                 unset(self::$_reqMap[$_reqSeqNo]);
+                unset(self::$seqTimerId[$_reqSeqNo]);
             });
 
             yield $this;
@@ -249,6 +301,9 @@ handle_exception:
         if (null !== $trace) {
             $trace->commit($exception);
             $traceId = $trace->getRootId();
+        }
+        if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+            $chromeTrace->commit("error", $exception);
         }
 
         yield Log::make('zan_framework')->error($exception->getMessage(), [
