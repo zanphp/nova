@@ -149,11 +149,7 @@ class Client implements Async
                         }
                     }
                     if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
-                        if ($remote) {
-                            $chromeTrace->commit("error", $e, $remote);
-                        } else {
-                            $chromeTrace->commit("error", $e);
-                        }
+                        $chromeTrace->commit("error", $e, $remote);
                     }
 
                     call_user_func($cb, null, $e);
@@ -169,11 +165,7 @@ class Client implements Async
                     $trace->commit(Constant::SUCCESS);
                 }
                 if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
-                    if ($remote) {
-                        $chromeTrace->commit("info", $ret, $remote);
-                    } else {
-                        $chromeTrace->commit("info", $ret);
-                    }
+                    $chromeTrace->commit("info", $ret, $remote);
                 }
                 call_user_func($cb, $ret);
                 return;
