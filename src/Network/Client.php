@@ -165,7 +165,7 @@ class Client implements Async
                 }
                 if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
                     $remote = JSONObject::fromRpcContext($rpcCtx);
-                    $chromeTrace->commit("info", json_encode($ret, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $remote);
+                    $chromeTrace->commit("info", $ret, $remote);
                 }
                 call_user_func($cb, $ret);
                 return;
@@ -247,7 +247,7 @@ handle_exception:
                 "local_ip" => $localIp,
                 "local_port" => $localPort,
                 "seq_no" => $_reqSeqNo,
-                "args" => json_encode($inputArguments, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                "args" => $inputArguments,
             ]);
         }
 
