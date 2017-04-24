@@ -127,8 +127,6 @@ class Client implements Async
             if ($serviceName == $context->getReqServiceName()
                     && $methodName == $context->getReqMethodName()) {
 
-                $remote = JSONObject::fromRpcContext($rpcCtx);
-
                 try {
                     $response = $packer->decode(
                         $thriftBIN,
@@ -149,6 +147,7 @@ class Client implements Async
                         }
                     }
                     if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                        $remote = JSONObject::fromRpcContext($rpcCtx);
                         $chromeTrace->commit("error", $e, $remote);
                     }
 
@@ -165,6 +164,7 @@ class Client implements Async
                     $trace->commit(Constant::SUCCESS);
                 }
                 if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                    $remote = JSONObject::fromRpcContext($rpcCtx);
                     $chromeTrace->commit("info", json_encode($ret, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $remote);
                 }
                 call_user_func($cb, $ret);
