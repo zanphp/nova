@@ -165,7 +165,7 @@ class Client implements Async
                     $trace->commit(Constant::SUCCESS);
                 }
                 if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
-                    $chromeTrace->commit("info", $ret, $remote);
+                    $chromeTrace->commit("info", json_encode($ret, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $remote);
                 }
                 call_user_func($cb, $ret);
                 return;
@@ -247,7 +247,7 @@ handle_exception:
                 "local_ip" => $localIp,
                 "local_port" => $localPort,
                 "seq_no" => $_reqSeqNo,
-                "args" => $inputArguments, // TODO clean
+                "args" => json_encode($inputArguments, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             ]);
         }
 
@@ -272,7 +272,7 @@ handle_exception:
             self::$_reqMap[$_reqSeqNo] = $context;
             self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($chromeTrace, $_reqSeqNo) {
                 if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
-                    $chromeTrace->commit("error", "timeout");
+                    $chromeTrace->commit("warn", "timeout");
                 }
                 unset(self::$_reqMap[$_reqSeqNo]);
                 unset(self::$seqTimerId[$_reqSeqNo]);
