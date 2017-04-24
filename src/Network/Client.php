@@ -244,7 +244,7 @@ handle_exception:
             $chromeTrace->beginTransaction("nova", [
                 "service" => $this->_serviceName,
                 "method" => $method,
-                "local_ip" => $localIp,
+                "local_ip" => long2ip($localIp),
                 "local_port" => $localPort,
                 "seq_no" => $_reqSeqNo,
                 "args" => $inputArguments,
