@@ -17,7 +17,6 @@ use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Foundation\Core\Config;
-use Zan\Framework\Foundation\Core\Debug;
 use Zan\Framework\Network\Server\Timer\Timer;
 use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
@@ -146,7 +145,7 @@ class Client implements Async
                             $trace->commit(Constant::SUCCESS);
                         }
                     }
-                    if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                    if ($chromeTrace instanceof ChromeTrace) {
                         $remote = JSONObject::fromRpcContext($rpcCtx);
                         $chromeTrace->commit("error", $e, $remote);
                     }
@@ -163,7 +162,7 @@ class Client implements Async
                 if (null !== $trace) {
                     $trace->commit(Constant::SUCCESS);
                 }
-                if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                if ($chromeTrace instanceof ChromeTrace) {
                     $remote = JSONObject::fromRpcContext($rpcCtx);
                     $chromeTrace->commit("info", $ret, $remote);
                 }
@@ -240,7 +239,7 @@ handle_exception:
         }
 
         $chromeTrace = (yield getContext('chrome_trace'));
-        if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+        if ($chromeTrace instanceof ChromeTrace) {
             $chromeTrace->beginTransaction("nova", [
                 "service" => $this->_serviceName,
                 "method" => $method,
@@ -271,7 +270,7 @@ handle_exception:
 
             self::$_reqMap[$_reqSeqNo] = $context;
             self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($chromeTrace, $_reqSeqNo) {
-                if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+                if ($chromeTrace instanceof ChromeTrace) {
                     $chromeTrace->commit("warn", "timeout");
                 }
                 unset(self::$_reqMap[$_reqSeqNo]);
@@ -293,7 +292,7 @@ handle_exception:
             $trace->commit($exception);
             $traceId = $trace->getRootId();
         }
-        if (Debug::get() && $chromeTrace instanceof ChromeTrace) {
+        if ($chromeTrace instanceof ChromeTrace) {
             $chromeTrace->commit("error", $exception);
         }
 
