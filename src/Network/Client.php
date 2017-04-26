@@ -30,6 +30,7 @@ use Zan\Framework\Sdk\Trace\TraceBuilder;
 class Client implements Async
 {
     const DEFAULT_SEND_TIMEOUT = 3000;
+    const MAX_NOVA_ATTACH_LEN = 30000; // nova header 总长度 0x7fff;
 
     private $_conn;
     private $_sock;
@@ -255,6 +256,9 @@ handle_exception:
         if ($attachment === [])
             $attachment = new \stdClass();
         $_attachmentContent = json_encode($attachment);
+        if (strlen($_attachmentContent) >= self::MAX_NOVA_ATTACH_LEN) {
+            $_attachmentContent = '{"error":"len of attach overflow"}';
+        }
 
         $context->setAttachmentContent($_attachmentContent);
 
