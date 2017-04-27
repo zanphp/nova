@@ -17,13 +17,13 @@ use Kdt\Iron\Nova\Exception\NetworkException;
 use Kdt\Iron\Nova\Exception\ProtocolException;
 use Zan\Framework\Contract\Network\Connection;
 use Zan\Framework\Foundation\Core\Config;
+use Zan\Framework\Network\Connection\Driver\NovaClient;
 use Zan\Framework\Network\Server\Timer\Timer;
 use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Network\Tcp\RpcContext;
-use Zan\Framework\Sdk\Trace\ChromeTrace;
 use Zan\Framework\Sdk\Trace\Constant;
-use Zan\Framework\Sdk\Trace\JSONObject;
+use Zan\Framework\Sdk\Trace\DebuggerTrace;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
 
@@ -32,9 +32,18 @@ class Client implements Async
     const DEFAULT_SEND_TIMEOUT = 3000;
     const MAX_NOVA_ATTACH_LEN = 30000; // nova header 总长度 0x7fff;
 
+    /**
+     * @var NovaClient
+     */
     private $_conn;
+    /**
+     * @var \swoole_client
+     */
     private $_sock;
     private $_serviceName;
+    /**
+     * @var ClientContext
+     */
     private $_currentContext;
     private static $_reqMap = [];
 
@@ -75,11 +84,13 @@ class Client implements Async
     /**
      * @param $data
      * @throws NetworkException
-     * @throws ProtocolException
-     * @return mixed
      */
     public function recv($data) 
     {
+        $exception = null;
+        $trace = null;
+        $debuggerTrace = null;
+
         if (false === $data or '' == $data) {
             $exception = new NetworkException(
                 socket_strerror($this->_sock->errCode),
@@ -88,9 +99,6 @@ class Client implements Async
 
             goto handle_exception;
         }
-
-        $trace = null;
-        $chromeTrace = null;
 
         $serviceName = $methodName = $remoteIP = $remotePort = $seqNo = $attachData = $thriftBIN = null;
         if (nova_decode($data, $serviceName, $methodName, $remoteIP, $remotePort, $seqNo, $attachData, $thriftBIN)) {
@@ -113,11 +121,12 @@ class Client implements Async
 
             /** @var Trace $trace */
             $trace = $ctx->get('trace');
-            $chromeTrace = $ctx->get('chrome_trace');
+            $debuggerTrace = $ctx->get('debugger_trace');
 
             $cb = $context->getCb();
             if ($serviceName === 'com.youzan.service.test' && $methodName === 'pong') {
-                return $this->pong($cb);
+                $this->pong($cb);
+                return;
             }
             /* @var $packer Packer */
             $packer = $context->getPacker();
@@ -146,9 +155,8 @@ class Client implements Async
                             $trace->commit(Constant::SUCCESS);
                         }
                     }
-                    if ($chromeTrace instanceof ChromeTrace) {
-                        $remote = JSONObject::fromRpcContext($rpcCtx);
-                        $chromeTrace->commit("error", $e, $remote);
+                    if ($debuggerTrace instanceof DebuggerTrace) {
+                        $debuggerTrace->commit("error", $e);
                     }
 
                     call_user_func($cb, null, $e);
@@ -163,9 +171,8 @@ class Client implements Async
                 if (null !== $trace) {
                     $trace->commit(Constant::SUCCESS);
                 }
-                if ($chromeTrace instanceof ChromeTrace) {
-                    $remote = JSONObject::fromRpcContext($rpcCtx);
-                    $chromeTrace->commit("info", $ret, $remote);
+                if ($debuggerTrace instanceof DebuggerTrace) {
+                    $debuggerTrace->commit("info", $ret);
                 }
                 call_user_func($cb, $ret);
                 return;
@@ -199,7 +206,8 @@ handle_exception:
      */
     public function call($method, $inputArguments, $outputStruct, $exceptionStruct)
     {
-        $_reqSeqNo = nova_get_sequence(); 
+        /** @noinspection PhpUndefinedFunctionInspection */
+        $_reqSeqNo = nova_get_sequence();
         $_packer = Packer::newInstance();
         
         $context = new ClientContext();
@@ -239,9 +247,9 @@ handle_exception:
             $attachment[Trace::TRACE_KEY]['eventId'] = $attachment[Trace::TRACE_KEY][Trace::CHILD_ID_KEY] = $msgId;
         }
 
-        $chromeTrace = (yield getContext('chrome_trace'));
-        if ($chromeTrace instanceof ChromeTrace) {
-            $chromeTrace->beginTransaction("nova", [
+        $debuggerTrace = (yield getContext("debugger_trace"));
+        if ($debuggerTrace instanceof DebuggerTrace) {
+            $debuggerTrace->beginTransaction(Constant::NOVA_CLIENT, [
                 "service" => $this->_serviceName,
                 "method" => $method,
                 "local_ip" => long2ip($localIp),
@@ -273,9 +281,9 @@ handle_exception:
             }
 
             self::$_reqMap[$_reqSeqNo] = $context;
-            self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($chromeTrace, $_reqSeqNo) {
-                if ($chromeTrace instanceof ChromeTrace) {
-                    $chromeTrace->commit("warn", "timeout");
+            self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($debuggerTrace, $_reqSeqNo) {
+                if ($debuggerTrace instanceof DebuggerTrace) {
+                    $debuggerTrace->commit("warn", "timeout");
                 }
                 unset(self::$_reqMap[$_reqSeqNo]);
                 unset(self::$seqTimerId[$_reqSeqNo]);
@@ -296,8 +304,8 @@ handle_exception:
             $trace->commit($exception);
             $traceId = $trace->getRootId();
         }
-        if ($chromeTrace instanceof ChromeTrace) {
-            $chromeTrace->commit("error", $exception);
+        if ($debuggerTrace instanceof DebuggerTrace) {
+            $debuggerTrace->commit("error", $exception);
         }
 
         yield Log::make('zan_framework')->error($exception->getMessage(), [
@@ -313,6 +321,7 @@ handle_exception:
 
     public function ping()
     {
+        /** @noinspection PhpUndefinedFunctionInspection */
         $_reqSeqNo = nova_get_sequence();
         $method = 'ping';
         $context = new ClientContext();
@@ -348,6 +357,5 @@ handle_exception:
     public function pong($cb)
     {
         call_user_func($cb, true);
-        return;
     }
 }
