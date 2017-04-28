@@ -249,14 +249,8 @@ handle_exception:
 
         $debuggerTrace = (yield getContext("debugger_trace"));
         if ($debuggerTrace instanceof DebuggerTrace) {
-            $debuggerTrace->beginTransaction(Constant::NOVA_CLIENT, [
-                "service" => $this->_serviceName,
-                "method" => $method,
-                "local_ip" => long2ip($localIp),
-                "local_port" => $localPort,
-                "seq_no" => $_reqSeqNo,
-                "args" => $inputArguments,
-            ]);
+            $name = $this->_serviceName . '.' . $method;
+            $debuggerTrace->beginTransaction(Constant::NOVA_CLIENT, $name, $inputArguments);
         }
 
         $rpcCtx = (yield getRpcContext(null, []));
