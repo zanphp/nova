@@ -255,6 +255,11 @@ handle_exception:
 
         $rpcCtx = (yield getRpcContext(null, []));
         $attachment = $attachment + $rpcCtx;
+
+        if ($debuggerTrace instanceof DebuggerTrace) {
+            $attachment[DebuggerTrace::KEY] = $debuggerTrace->getKey();
+        }
+
         if ($attachment === [])
             $attachment = new \stdClass();
         $_attachmentContent = json_encode($attachment);
