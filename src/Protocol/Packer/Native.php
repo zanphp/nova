@@ -188,6 +188,15 @@ class Native extends Abstracts
 
             if (isset($args[$fid]))
             {
+                if (isset($args[$fid]["type"])) {
+                    $expectType = $args[$fid]["type"];
+                    $readType = $fType;
+                    if ($expectType != $readType) {
+                        $t1 = $this->getTType($expectType);
+                        $t2 = $this->getTType($fType);
+                        throw new TProtocolException("Nova Decode Fail: expected $t1 but got $t2");
+                    }
+                }
                 $this->setArg($args[$fid], $fType, $xfer);
             }
             else
@@ -453,5 +462,15 @@ class Native extends Abstracts
 
             $this->wCallbacks[TType::SET] = $this->wCallbacks[TType::LST];
         }
+    }
+
+    private function getTType($type)
+    {
+        static $cache = [];
+        if (empty($cache)) {
+            $clazz = new \ReflectionClass(TType::class);
+            $cache = array_flip($clazz->getConstants());
+        }
+        return isset($cache[$type]) ? $cache[$type] : "UNKNOWN";
     }
 }
