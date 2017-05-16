@@ -262,6 +262,8 @@ handle_exception:
 
         if ($attachment === [])
             $attachment = new \stdClass();
+        else
+            $attachment[Trace::TRACE_KEY] = json_encode($attachment[Trace::TRACE_KEY]);
         $_attachmentContent = json_encode($attachment);
         if (strlen($_attachmentContent) >= self::MAX_NOVA_ATTACH_LEN) {
             $_attachmentContent = '{"error":"len of attach overflow"}';
