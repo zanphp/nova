@@ -142,7 +142,12 @@ class Client implements Async
                         $packer->struct($context->getOutputStruct(), $context->getExceptionStruct()),
                         Packer::CLIENT
                     );
-                } catch (\Exception $e) {
+                }
+
+                catch (\Throwable $e) { }
+                catch (\Exception $e) { }
+
+                if (isset($e)) {
                     if (null !== $trace) {
                         if ($e instanceof TApplicationException) {
                             //只有系统异常上报异常信息
@@ -161,21 +166,21 @@ class Client implements Async
 
                     call_user_func($cb, null, $e);
                     return;
+                } else {
+                    $hawk->addTotalSuccessTime(Hawk::CLIENT, $serviceName, $methodName, $serverIp, microtime(true) - $context->getStartTime());
+                    $hawk->addTotalSuccessCount(Hawk::CLIENT, $serviceName, $methodName, $serverIp);
+                    $ret = isset($response[$packer->successKey])
+                        ? $response[$packer->successKey]
+                        : null;
+                    if (null !== $trace) {
+                        $trace->commit(Constant::SUCCESS);
+                    }
+                    if ($debuggerTrace instanceof DebuggerTrace) {
+                        $debuggerTrace->commit("info", $ret);
+                    }
+                    call_user_func($cb, $ret);
+                    return;
                 }
-
-                $hawk->addTotalSuccessTime(Hawk::CLIENT, $serviceName, $methodName, $serverIp, microtime(true) - $context->getStartTime());
-                $hawk->addTotalSuccessCount(Hawk::CLIENT, $serviceName, $methodName, $serverIp);
-                $ret = isset($response[$packer->successKey])
-                    ? $response[$packer->successKey]
-                    : null;
-                if (null !== $trace) {
-                    $trace->commit(Constant::SUCCESS);
-                }
-                if ($debuggerTrace instanceof DebuggerTrace) {
-                    $debuggerTrace->commit("info", $ret);
-                }
-                call_user_func($cb, $ret);
-                return;
             } 
         } else {
             $exception = new ProtocolException('nova.decoding.failed ~[client:'.strlen($data).']');
