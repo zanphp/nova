@@ -202,7 +202,6 @@ class Native extends Abstracts
             else
             {
                 $xfer += $this->inputBin->skip($fType);
-                break;
             }
 
             $xfer += $this->inputBin->readFieldEnd();
