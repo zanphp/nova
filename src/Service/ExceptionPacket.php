@@ -1,10 +1,4 @@
 <?php
-/**
- * Exception injector
- * User: moyo
- * Date: 10/10/15
- * Time: 6:15 PM
- */
 
 namespace Kdt\Iron\Nova\Service;
 

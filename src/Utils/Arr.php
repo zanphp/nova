@@ -1,15 +1,10 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: winglechen
- * Date: 16/3/17
- * Time: 13:23
- */
 
 namespace Kdt\Iron\Nova\Utils;
 
 
-class Arr {
+class Arr
+{
     public static function join(array $before, array $after) {
         if(empty($before) ) {
             return $after;

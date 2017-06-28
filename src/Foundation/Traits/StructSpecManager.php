@@ -1,10 +1,4 @@
 <?php
-/**
- * Spec mgr (for struct)
- * User: moyo
- * Date: 9/25/15
- * Time: 2:31 PM
- */
 
 namespace Kdt\Iron\Nova\Foundation\Traits;
 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Abs TSpecification
- * User: moyo
- * Date: 9/15/15
- * Time: 3:23 PM
- */
 
 namespace Kdt\Iron\Nova\Foundation;
 

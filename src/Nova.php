@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: winglechen
- * Date: 16/3/18
- * Time: 14:47
- */
 namespace Kdt\Iron\Nova;
 
 use Kdt\Iron\Nova\Protocol\Packer;

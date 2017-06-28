@@ -1,10 +1,4 @@
 <?php
-/**
- * Abs TStruct
- * User: moyo
- * Date: 9/10/15
- * Time: 4:35 PM
- */
 
 namespace Kdt\Iron\Nova\Foundation\Protocol;
 

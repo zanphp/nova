@@ -314,14 +314,17 @@ handle_exception:
             $debuggerTrace->commit("error", $exception);
         }
 
-        yield Log::make('zan_framework')->error($exception->getMessage(), [
-            'exception' => $exception,
-            'app' => Application::getInstance()->getName(),
-            'language'=>'php',
-            'side'=>'client',//server,client两个选项
-            'traceId'=> $traceId,
-            'method'=>$this->_serviceName.'.'.$method,
-        ]);
+        if (Config::get('log.zan_framework')) {
+            yield Log::make('zan_framework')->error($exception->getMessage(), [
+                'exception' => $exception,
+                'app' => Application::getInstance()->getName(),
+                'language'=>'php',
+                'side'=>'client',//server,client两个选项
+                'traceId'=> $traceId,
+                'method'=>$this->_serviceName.'.'.$method,
+            ]);
+        }
+
         throw $exception;
     }
 
