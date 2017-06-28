@@ -1,10 +1,4 @@
 <?php
-/**
- * Client manager
- * User: moyo
- * Date: 9/28/15
- * Time: 3:16 PM
- */
 
 namespace Kdt\Iron\Nova\Network;
 
