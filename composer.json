@@ -19,9 +19,9 @@
     }
   },
   "config": {
-        "preferred-install": "dist"
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
-
+    "preferred-install": "dist",
+    "secure-http": false
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
