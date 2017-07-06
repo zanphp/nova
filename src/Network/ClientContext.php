@@ -15,6 +15,7 @@ class ClientContext
     private $_cb;
     private $_task;
     private $_startTime;//us
+    private $_traceHandle;
 
     /**
      * @return mixed
@@ -173,6 +174,22 @@ class ClientContext
     public function setStartTime()
     {
         $this->_startTime = microtime(true);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTraceHandle()
+    {
+        return $this->_traceHandle;
+    }
+
+    /**
+     * @param mixed $traceHandle
+     */
+    public function setTraceHandle($traceHandle)
+    {
+        $this->_traceHandle = $traceHandle;
     }
 
 

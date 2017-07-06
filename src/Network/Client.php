@@ -147,11 +147,11 @@ class Client implements Async
                             //只有系统异常上报异常信息
                             $hawk->addTotalFailureTime(Hawk::CLIENT, $serviceName, $methodName, $serverIp, microtime(true) - $context->getStartTime());
                             $hawk->addTotalFailureCount(Hawk::CLIENT, $serviceName, $methodName, $serverIp);
-                            $trace->commit($e->getTraceAsString());
+                            $trace->commit($context->getTraceHandle(), $e->getTraceAsString());
                         } else {
                             $hawk->addTotalSuccessTime(Hawk::CLIENT, $serviceName, $methodName, $serverIp, microtime(true) - $context->getStartTime());
                             $hawk->addTotalSuccessCount(Hawk::CLIENT, $serviceName, $methodName, $serverIp);
-                            $trace->commit(Constant::SUCCESS);
+                            $trace->commit($context->getTraceHandle(), Constant::SUCCESS);
                         }
                     }
                     if ($debuggerTrace instanceof DebuggerTrace) {
@@ -167,7 +167,7 @@ class Client implements Async
                         ? $response[$packer->successKey]
                         : null;
                     if (null !== $trace) {
-                        $trace->commit(Constant::SUCCESS);
+                        $trace->commit($context->getTraceHandle(), Constant::SUCCESS);
                     }
                     if ($debuggerTrace instanceof DebuggerTrace) {
                         $debuggerTrace->commit("info", $ret);
@@ -185,7 +185,7 @@ handle_exception:
         foreach (self::$_reqMap as $req) {
             if (null !== $trace) {
                 $trace = $req->getTask()->getContext()->get('trace');
-                $trace->commit(socket_strerror($this->_sock->errCode));
+                $trace->commit($req->getTraceHandle(), socket_strerror($this->_sock->errCode));
             }
             $req->getTask()->sendException($exception);
         }
@@ -233,7 +233,8 @@ handle_exception:
         $attachment = [];
 
         if (null !== $trace) {
-            $trace->transactionBegin(Constant::NOVA_CLIENT, $this->_serviceName . '.' . $method);
+            $traceHandle = $trace->transactionBegin(Constant::NOVA_CLIENT, $this->_serviceName . '.' . $method);
+            $context->setTraceHandle($traceHandle);
             $msgId = TraceBuilder::generateId();
             $trace->logEvent(Constant::REMOTE_CALL, Constant::SUCCESS, "", $msgId);
             $trace->setRemoteCallMsgId($msgId);
@@ -301,7 +302,7 @@ handle_exception:
 handle_exception:
         $traceId = '';
         if (null !== $trace) {
-            $trace->commit($exception);
+            $trace->commit($context->getTraceHandle(), $exception);
             $traceId = $trace->getRootId();
         }
         if ($debuggerTrace instanceof DebuggerTrace) {
