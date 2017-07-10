@@ -104,7 +104,7 @@ class Client implements Async
             /** @var ClientContext $context */
             $context = isset(self::$_reqMap[$seqNo]) ? self::$_reqMap[$seqNo] : null;
             if (!$context) {
-                throw new NetworkException("nova call timeout");
+                return;
             }
             unset(self::$_reqMap[$seqNo]);
 
@@ -288,6 +288,8 @@ handle_exception:
                 }
                 unset(self::$_reqMap[$_reqSeqNo]);
                 unset(self::$seqTimerId[$_reqSeqNo]);
+                $cb = $this->_currentContext->getCb();
+                call_user_func($cb, null, new NetworkException("nova recv timeout"));
             });
 
             yield $this;
