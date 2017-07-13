@@ -21,7 +21,6 @@ use Zan\Framework\Sdk\Trace\DebuggerTrace;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
 
-
 class Client implements Async
 {
     const DEFAULT_SEND_TIMEOUT = 3000;
@@ -110,11 +109,9 @@ class Client implements Async
             unset(self::$_reqMap[$seqNo]);
 
             /* @var $ctx \Zan\Framework\Utilities\DesignPattern\Context */
-            $rpcCtx = new RpcContext();
-            $rpcCtx->unpackNovaAttach($attachData);
             $ctx = $context->getTask()->getContext();
-            $ctx->set("rpc-context-nova-response", $ctx);
-
+            $rpcCtx = RpcContext::unpack($attachData);
+            $rpcCtx->bindTaskCtx($ctx);
 
             /** @var Trace $trace */
             $trace = $ctx->get('trace');
@@ -231,10 +228,9 @@ handle_exception:
         $hawk = Hawk::getInstance();
         $serverIp = $localIp . ':' . $localPort;
 
-        $attachment = [];
-
         /** @var Trace $trace */
         $trace = (yield getContext('trace'));
+        $attachment = [];
 
         if (null !== $trace) {
             $traceHandle = $trace->transactionBegin(Constant::NOVA_CLIENT, $this->_serviceName . '.' . $method);
