@@ -17,9 +17,9 @@ use Zan\Framework\Sdk\Log\Log;
 use Zan\Framework\Sdk\Monitor\Hawk;
 use Zan\Framework\Network\Tcp\RpcContext;
 use Zan\Framework\Sdk\Trace\Constant;
-use Zan\Framework\Sdk\Trace\DebuggerTrace;
 use Zan\Framework\Sdk\Trace\Trace;
 use Zan\Framework\Sdk\Trace\TraceBuilder;
+use ZanPHP\Contracts\Debugger\Tracer;
 
 
 class Client implements Async
@@ -157,8 +157,8 @@ class Client implements Async
                             $trace->commit($context->getTraceHandle(), Constant::SUCCESS);
                         }
                     }
-                    if ($debuggerTrace instanceof DebuggerTrace) {
-                        $debuggerTrace->commit("error", $e);
+                    if ($debuggerTrace instanceof Tracer) {
+                        $debuggerTrace->commit($context->getDebuggerTraceTid(), "error", $e);
                     }
 
                     call_user_func($cb, null, $e);
@@ -172,8 +172,8 @@ class Client implements Async
                     if (null !== $trace) {
                         $trace->commit($context->getTraceHandle(), Constant::SUCCESS);
                     }
-                    if ($debuggerTrace instanceof DebuggerTrace) {
-                        $debuggerTrace->commit("info", $ret);
+                    if ($debuggerTrace instanceof Tracer) {
+                        $debuggerTrace->commit($context->getDebuggerTraceTid(), "info", $ret);
                     }
                     call_user_func($cb, $ret);
                     return;
@@ -252,16 +252,18 @@ handle_exception:
         }
 
         $debuggerTrace = (yield getContext("debugger_trace"));
-        if ($debuggerTrace instanceof DebuggerTrace) {
+        $debuggerTid = null;
+        if ($debuggerTrace instanceof Tracer) {
             $name = $this->_serviceName . '.' . $method;
-            $debuggerTrace->beginTransaction(Constant::NOVA_CLIENT, $name, $inputArguments);
+            $debuggerTid = $debuggerTrace->beginTransaction(Constant::NOVA_CLIENT, $name, $inputArguments);
+            $context->setDebuggerTraceTid($debuggerTid);
         }
 
         $rpcCtx = (yield getRpcContext(null, []));
         $attachment = $attachment + $rpcCtx;
 
-        if ($debuggerTrace instanceof DebuggerTrace) {
-            $attachment[DebuggerTrace::KEY] = $debuggerTrace->getKey();
+        if ($debuggerTrace instanceof Tracer) {
+            $attachment[Tracer::KEY] = $debuggerTrace->getKey();
         }
 
         if ($attachment === [])
@@ -286,9 +288,9 @@ handle_exception:
             }
 
             self::$_reqMap[$_reqSeqNo] = $context;
-            self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($debuggerTrace, $_reqSeqNo) {
-                if ($debuggerTrace instanceof DebuggerTrace) {
-                    $debuggerTrace->commit("warn", "timeout");
+            self::$seqTimerId[$_reqSeqNo] = Timer::after(self::$sendTimeout, function() use($debuggerTrace, $debuggerTid, $_reqSeqNo) {
+                if ($debuggerTrace instanceof Tracer) {
+                    $debuggerTrace->commit($debuggerTid, "warn", "timeout");
                 }
                 unset(self::$_reqMap[$_reqSeqNo]);
                 unset(self::$seqTimerId[$_reqSeqNo]);
@@ -311,8 +313,8 @@ handle_exception:
             $trace->commit($context->getTraceHandle(), $exception);
             $traceId = $trace->getRootId();
         }
-        if ($debuggerTrace instanceof DebuggerTrace) {
-            $debuggerTrace->commit("error", $exception);
+        if ($debuggerTrace instanceof Tracer) {
+            $debuggerTrace->commit($debuggerTid, "error", $exception);
         }
 
         if (Config::get('log.zan_framework')) {
