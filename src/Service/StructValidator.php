@@ -56,7 +56,7 @@ class StructValidator
     public static function validateOutput(array $outputStruct, $side)
     {
         foreach ($outputStruct as $pos => $spec) {
-            if ($spec["value"] !== null) {
+            if (isset($spec["value"])) {
                 $path = $spec["var"] === "success" ? "\$return" : $spec["var"];
                 static::validateHelper($spec["value"], $spec, $path, $side, static::OUTPUT);
             } else {
