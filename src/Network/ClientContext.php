@@ -16,6 +16,7 @@ class ClientContext
     private $_task;
     private $_startTime;//us
     private $_traceHandle;
+    private $_debuggerTraceTid;
 
     /**
      * @return mixed
@@ -190,6 +191,16 @@ class ClientContext
     public function setTraceHandle($traceHandle)
     {
         $this->_traceHandle = $traceHandle;
+    }
+
+    public function getDebuggerTraceTid()
+    {
+        return $this->_debuggerTraceTid;
+    }
+
+    public function setDebuggerTraceTid($tid)
+    {
+        $this->_debuggerTraceTid = $tid;
     }
 
 

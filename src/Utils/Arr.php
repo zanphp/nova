@@ -107,7 +107,7 @@ class Arr
      */
     public static function accessible($value)
     {
-        return is_array($value) || $value instanceof ArrayAccess;
+        return is_array($value) || $value instanceof \ArrayAccess;
     }
 
     /**
@@ -196,7 +196,7 @@ class Arr
 
         foreach (explode('.', $key) as $segment) {
             if ((is_array($array) && array_key_exists($segment, $array))
-                || ($array instanceof ArrayAccess && $array->offsetExists($segment))) {
+                || ($array instanceof \ArrayAccess && $array->offsetExists($segment))) {
                 $array = $array[$segment];
             } else {
                 return false;
