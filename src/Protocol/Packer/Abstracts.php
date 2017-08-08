@@ -11,6 +11,7 @@ use Thrift\Transport\TMemoryBuffer;
 use Thrift\Type\TMessageType;
 use Exception as SysException;
 
+
 abstract class Abstracts
 {
     /**
