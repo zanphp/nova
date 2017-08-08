@@ -8,7 +8,7 @@ use Thrift\Exception\TApplicationException;
 use Thrift\Exception\TProtocolException;
 use Thrift\Type\TMessageType;
 use Thrift\Type\TType;
-
+use Exception as SysException;
 
 class Native extends Abstracts
 {
