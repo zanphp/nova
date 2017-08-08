@@ -5,8 +5,7 @@ namespace Kdt\Iron\Nova\Service;
 
 use Kdt\Iron\Nova\Exception\FrameworkException;
 use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
-use Zan\Framework\Foundation\Application;
-use Zan\Framework\Foundation\Core\Path;
+use ZanPHP\Contracts\Foundation\Application;
 
 class NovaConfig
 {
@@ -24,7 +23,8 @@ class NovaConfig
 
     public function __construct()
     {
-        $app = Application::getInstance();
+        /** @var Application $app */
+        $app = make(Application::class);
         $base = $app->getBasePath();
 
         $f1 = "vendor/nova-service/generic/sdk/gen-php";
@@ -65,13 +65,18 @@ class NovaConfig
         }
         unset($item);
 
+        $rootPath = getenv("path.root");
+        if (empty($rootPath)) {
+            throw  new FrameworkException("empty path.root");
+        }
+
         // 按注册分组添加 泛化调用服务
         foreach ($etcdKeys as list($proto, $domain, $app)) {
             if ($proto === Registry::PROTO_NOVA) {
                 $config[] = [
                     "appName" => $app,
                     "domain" => $domain,
-                    "path"  => Path::getRootPath() . $this->genericInvokePath . "/",
+                    "path"  => $rootPath . $this->genericInvokePath . "/",
                     "namespace" => self::$genericInvokeBaseNamespace,
                     "protocol" => Registry::PROTO_NOVA,
                 ];
