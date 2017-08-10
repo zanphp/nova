@@ -52,6 +52,9 @@ class Nova
         return $novaConfig->removeNovaNamespace("nova", null, $appName, $serviceName);
     }
 
+    /**
+     * @deprecated
+     */
     public static function decodeServiceArgs($serviceName, $methodName, $binArgs, $side = self::SERVER)
     {
         /* @var $packer PackerFacade */
@@ -59,6 +62,9 @@ class Nova
         return $packer->decodeServiceArgs($serviceName, $methodName, $binArgs, $side);
     }
 
+    /**
+     * @deprecated
+     */
     public static function encodeServiceOutput($serviceName, $methodName, $output, $side = self::SERVER)
     {
         /* @var $packer PackerFacade */
@@ -66,6 +72,9 @@ class Nova
         return $packer->encodeServiceOutput($serviceName, $methodName, $output, $side);
     }
 
+    /**
+     * @deprecated
+     */
     public static function encodeServiceException($serviceName, $methodName, $exception, $side = self::SERVER)
     {
         /* @var $packer PackerFacade */
