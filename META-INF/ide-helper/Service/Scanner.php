@@ -1,11 +1,11 @@
 <?php
 
-namespace ZanPHP\Nova\Service;
+namespace Kdt\Iron\Nova\Service;
 
-use ZanPHP\Nova\Exception\FrameworkException;
-use ZanPHP\Nova\Utils\Dir;
-use ZanPHP\NovaFoundation\Foundation\Traits\InstanceManager;
-use ZanPHP\ThriftSerialization\ClassMap;
+use Kdt\Iron\Nova\Exception\FrameworkException;
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
+use Kdt\Iron\Nova\Foundation\TSpecification;
+use Kdt\Iron\Nova\Utils\Dir;
 
 class Scanner
 {

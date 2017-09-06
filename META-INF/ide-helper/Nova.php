@@ -1,14 +1,12 @@
 <?php
+namespace Kdt\Iron\Nova;
 
-namespace ZanPHP\Nova;
-
-use ZanPHP\Nova\Service\Initator;
-use ZanPHP\Nova\Service\NovaConfig;
-use ZanPHP\Nova\Service\Registry;
-use ZanPHP\Nova\Service\Scanner;
-use ZanPHP\NovaFoundation\Foundation\TSpecification;
-use ZanPHP\ThriftSerialization\Packer;
-use ZanPHP\ThriftSerialization\PackerFacade;
+use Kdt\Iron\Nova\Protocol\Packer;
+use Kdt\Iron\Nova\Service\Initator;
+use Kdt\Iron\Nova\Service\Registry;
+use Kdt\Iron\Nova\Service\NovaConfig;
+use Kdt\Iron\Nova\Service\PackerFacade;
+use Kdt\Iron\Nova\Service\Scanner;
 
 class Nova
 {
@@ -31,7 +29,7 @@ class Nova
     /**
      * @param $path
      * @param $baseNamespace
-     * @return TSpecification[]
+     * @return Foundation\TSpecification[]
      */
     public static function getSpec($path, $baseNamespace)
     {

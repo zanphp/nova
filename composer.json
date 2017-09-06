@@ -13,14 +13,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Kdt\\Iron\\Nova\\": "src",
-      "Kdt\\Iron\\Nova\\Tests\\": "tests"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Com\\Youzan\\Sso\\": "tests/resource/sso/sdk/gen-php",
-      "Com\\Youzan\\Material\\": "tests/resource/material/sdk/gen-php"
+      "ZanPHP\\Nova\\": "src",
+      "ZanPHP\\Nova\\Tests\\": "tests"
     }
   },
   "config": {

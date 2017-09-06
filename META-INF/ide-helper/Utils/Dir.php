@@ -1,8 +1,8 @@
 <?php
 
-namespace ZanPHP\Nova\Utils;
+namespace Kdt\Iron\Nova\Utils;
 
-use InvalidArgumentException;
+use \Exception as InvalidArgumentException;
 
 class Dir
 {

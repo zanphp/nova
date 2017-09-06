@@ -1,8 +1,9 @@
 <?php
 
-namespace ZanPHP\Nova\Service;
+namespace Kdt\Iron\Nova\Service;
 
-use ZanPHP\NovaFoundation\Foundation\Traits\InstanceManager;
+
+use Kdt\Iron\Nova\Foundation\Traits\InstanceManager;
 
 class Initator
 {
